@@ -50,7 +50,7 @@ public class GraphicsEntety extends JLabel {
         g2.fillOval(0,0,entetySize, entetySize);
 
 
-        super.paintChildren(g);
+        super.paintComponent(g);
     }
 
     public int getEntetySize() {

@@ -44,6 +44,10 @@ public class GraphicsEngine implements Runnable {
         }
     }
 
+    public void addMap(Map map){
+        gamePanel.setMap(map);
+    }
+
     public void addEntety(GraphicsEntety entety){
 
 

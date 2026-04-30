@@ -4,28 +4,22 @@ import java.awt.*;
 
 public class Game {
 
-    int maxX;
-    int MaxY;
-    GraphicsEngine graphicsEngine;
+    private int maxX;
+    private int MaxY;
+    private Map loadedMap;
+    private GraphicsEngine graphicsEngine;
+    private boolean isInMenu = true;
+    private boolean isPaused = false;
 
 
     public Game(GraphicsEngine engine){
         // main game loop
         graphicsEngine = engine;
+        loadedMap = new Map("src/towerrush/levels/map_level1.csv");
+        System.out.println(loadedMap.getName());
+        engine.addMap(loadedMap);
         graphicsEngine.startRenderTread();
-        while (true) {
-            GraphicsEntety entety = new GraphicsEntety(250, 250, Color.GREEN);
-            for (int i = 0; i < 500; i++) {
-                entety.setPosition(250 + i, 250 + i);
-                graphicsEngine.addEntety(entety);
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            engine.removeEntety(entety);
-        }
+
     }
 
 
