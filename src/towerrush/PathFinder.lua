@@ -4,12 +4,15 @@ function findPaths(map, pathValue)
     local rows = #map
     local cols = #map[1]
 
+    print(pathValue)
+
     -- Zoek het startpunt (overal in de map, niet alleen de rand)
     local function findStart()
         for r = 1, rows do
             for c = 1, cols do
                 -- We gebruiken tonumber() voor de zekerheid bij Java objecten
-                if tonumber(map[r][c]) == tonumber(pathValue) then
+                if map[r][c]:getValue() == tonumber(pathValue) then
+                    print("start gevonden bij: " .. r .. "," .. c)
                     return {r = r, c = c}
                 end
             end
@@ -22,6 +25,7 @@ function findPaths(map, pathValue)
     -- Als er niks gevonden is, geef een lege tabel {} i.p.v. nil
     -- Dit voorkomt de RuntimeException in Map.java:74
     if not startNode then
+        print("geen start gevonden ")
         return {}
     end
 
@@ -42,7 +46,7 @@ function findPaths(map, pathValue)
             local nr, nc = current.r + dir[1], current.c + dir[2]
 
             if nr >= 1 and nr <= rows and nc >= 1 and nc <= cols and not visited[nr .. "," .. nc] then
-                local val = tonumber(map[nr][nc])
+                local val = map[nr][nc]:getValue()
                 -- Een pad gaat verder op zijn eigen waarde (pathValue) of een kruispunt (3)
                 if val == tonumber(pathValue) or val == 3 then
                     nextStep = {r = nr, c = nc}

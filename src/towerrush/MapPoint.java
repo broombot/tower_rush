@@ -28,13 +28,6 @@ public class MapPoint {
         this.y = y;
     }
 
-    public double getDoublex(){
-        return x;
-    }
-
-    public double getDoubley(){
-        return y;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -44,12 +37,20 @@ public class MapPoint {
     }
 
     @Override
+    public String toString() {
+        return "MapPoint{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(getX(), getY());
     }
 
     public double distance(MapPoint mapPoint){
-        return Math.sqrt(Math.pow(this.getDoublex() + mapPoint.getDoublex(),2) +
-                Math.pow(this.getDoubley() + mapPoint.getDoubley(),2));
+        return Math.sqrt(Math.pow(this.x - mapPoint.x,2) +
+                Math.pow(this.y - mapPoint.y ,2));
     };
 }

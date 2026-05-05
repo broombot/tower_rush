@@ -1,6 +1,8 @@
 
 package towerrush;
 
+import java.util.Arrays;
+
 public class Path {
 
     private MapPoint[] Path;
@@ -23,6 +25,14 @@ public class Path {
             System.out.println(e.getMessage());
             throw new RuntimeException();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Path{" +
+                "length =" + getPath().length +
+                "Path=" + Arrays.toString(Path) +
+                '}';
     }
 
     public Path(MapPoint[] path) {

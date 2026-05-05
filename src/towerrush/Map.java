@@ -86,6 +86,7 @@ public class Map {
                 }
 
                 paths[i - 4] = new Path(temp.toArray(temp.toArray(new MapPoint[temp.size()])));
+                System.out.println(paths[i-4]);
             } else {
                 throw new RuntimeException("faild to load function");
             }

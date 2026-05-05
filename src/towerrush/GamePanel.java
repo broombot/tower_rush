@@ -2,37 +2,35 @@ package towerrush;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ImageObserver;
-import java.awt.image.RenderedImage;
-import java.awt.image.renderable.RenderableImage;
-import java.text.AttributedCharacterIterator;
 
 public class GamePanel extends JPanel {
 
-    final int originalTileSize = 16;
-    int scale = 2;
+    private final int originalTileSize = 16;
+    private int scale = 2;
     private Map map;
 
-    int tileSize = originalTileSize * scale;
-    final int screenCol = 50;
-    final int screenRow = 25;
-    int screenWidth = tileSize * screenCol;
-    int screenHeight = tileSize * screenRow;
+    private int tileSize = originalTileSize * scale;
+    private final int screenCol = 50;
+    private final int screenRow = 25;
+    private int screenWidth = tileSize * screenCol;
+    private int screenHeight = tileSize * screenRow;
+
+    private Color placebleColor;
+    private Color pathColor;
+    private Color projectileBlockingColor;
+    private Color blockedColor;
+
+
 
     Thread gameThread;
 
-    public GamePanel(){
-
-        this.setPreferredSize(new Dimension(screenWidth,screenHeight));
-        this.setDoubleBuffered(true);
-        this.setBackground(Color.black);
-        this.setLayout(null);
-
+    public GamePanel(Color blockedColor, Color projectileBlockingColor, Color pathColor, Color placebleColor, int screenHeight, int screenWidth) {
+        this.blockedColor = blockedColor;
+        this.projectileBlockingColor = projectileBlockingColor;
+        this.pathColor = pathColor;
+        this.placebleColor = placebleColor;
+        this.screenHeight = screenHeight;
+        this.screenWidth = screenWidth;
     }
 
     public void setMap(Map map){
