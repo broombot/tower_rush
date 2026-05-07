@@ -1,5 +1,5 @@
 
-package towerrush;
+package towerrush.gameLogic;
 
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
@@ -65,7 +65,7 @@ public class Map {
 
         for (int i = 4; i < numberOfPaths + 4; i++) {
             Globals globals = JsePlatform.standardGlobals();
-            LuaValue luaScript = globals.loadfile("src/towerrush/PathFinder.lua").call();
+            LuaValue luaScript = globals.loadfile("src/towerrush/gameLogic/PathFinder.lua").call();
             LuaValue findPathsFunc = globals.get("findPaths");
 
             if (!findPathsFunc.isnil()) {

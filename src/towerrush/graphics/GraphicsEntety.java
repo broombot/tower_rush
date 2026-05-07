@@ -1,4 +1,4 @@
-package towerrush;
+package towerrush.graphics;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +17,13 @@ public class GraphicsEntety extends JLabel {
         super(new ImageIcon(scaled));
         this.x = x;
         this.y = y;
+    }
+
+    public GraphicsEntety(int x, int y, Color color,int size) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.entetySize = size;
     }
 
     public GraphicsEntety(int x, int y, Color color) {

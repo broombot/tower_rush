@@ -1,6 +1,6 @@
-package towerrush;
+package towerrush.gameLogic;
 
-import java.awt.*;
+import towerrush.graphics.GraphicsEngine;
 
 public class Game {
 

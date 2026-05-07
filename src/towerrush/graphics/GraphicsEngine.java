@@ -1,7 +1,9 @@
-package towerrush;
+package towerrush.graphics;
+
+import towerrush.gameLogic.Map;
+import towerrush.gameLogic.VisualsFactory;
 
 import javax.swing.*;
-import java.util.List;
 
 public class GraphicsEngine implements Runnable {
 
@@ -9,6 +11,11 @@ public class GraphicsEngine implements Runnable {
     private GamePanel gamePanel;
     private MenuPanel menuPanel;
     private Thread renderTread;
+    private VisualsFactory visualsFactory = new OriginalVisualsFactory();
+
+    public void setVisualsFactory(VisualsFactory visualsFactory) {
+        this.visualsFactory = visualsFactory;
+    }
 
     public GraphicsEngine() {
 
@@ -16,11 +23,11 @@ public class GraphicsEngine implements Runnable {
 
         JFrame window = new JFrame();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setResizable(false);
+        window.setResizable(true);
         window.setTitle("tower rush");
 
-        gamePanel = new GamePanel();
-        menuPanel = new MenuPanel();
+        gamePanel = visualsFactory.creatGamePanel();
+        menuPanel = visualsFactory.creatMenuPanel();
         window.add(gamePanel);
         window.pack();
 
@@ -49,7 +56,6 @@ public class GraphicsEngine implements Runnable {
     }
 
     public void addEntety(GraphicsEntety entety){
-
 
         gamePanel.addEntety(entety);
 

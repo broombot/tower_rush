@@ -1,4 +1,4 @@
-package towerrush;
+package towerrush.gameLogic;
 
 public abstract class Tower {
 

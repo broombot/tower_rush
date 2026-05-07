@@ -1,4 +1,4 @@
-package towerrush;
+package towerrush.graphics;
 
 import javax.swing.*;
 

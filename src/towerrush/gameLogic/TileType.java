@@ -11,7 +11,7 @@
  * 6 | PATH 3
  * code supports unlimited amount of Paths you can just add more with last value++ and last path++
  */
-package towerrush;
+package towerrush.gameLogic;
 
 public enum TileType {
 

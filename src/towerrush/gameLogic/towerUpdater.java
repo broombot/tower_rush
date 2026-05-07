@@ -1,4 +1,4 @@
-package towerrush;
+package towerrush.gameLogic;
 
 import java.util.stream.Stream;
 
