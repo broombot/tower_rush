@@ -1,5 +1,3 @@
-package towerrush.gameLogic;
-
 public abstract class Tower {
 
     private MapPoint position;

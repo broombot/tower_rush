@@ -1,6 +1,4 @@
-package towerrush.gameLogic;
-
-public class Projectile {
+public abstract class Projectile {
     private MovementComponent movementComponent;
     private int damage;
 

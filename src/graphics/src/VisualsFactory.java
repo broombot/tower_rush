@@ -1,8 +1,4 @@
-package towerrush.gameLogic;
 
-import towerrush.graphics.GamePanel;
-import towerrush.graphics.GraphicsEntety;
-import towerrush.graphics.MenuPanel;
 
 public interface VisualsFactory {
 

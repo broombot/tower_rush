@@ -1,6 +1,4 @@
-package towerrush.graphics;
 
-import towerrush.gameLogic.Map;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,9 +33,10 @@ public class GamePanel extends JPanel {
     }
 
     public void reScale(){
-      tileSize = (int)(originalTileSize * scale);
-      screenHeight = tileSize * screenHeight;
-      screenWidth = tileSize * screenWidth;
+        tileSize = (int)(originalTileSize * scale);
+        screenWidth = tileSize * screenCol;
+        screenHeight = tileSize * screenRow;
+        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
     };
 
 
@@ -62,13 +61,8 @@ public class GamePanel extends JPanel {
 
         if(map != null){
 
-
-            float colomScale = Math.max(1, screenCol/ map.getMapWith());
-            float rowScale = Math.max(1,screenRow/ map.getMapHight());
-
-            int tileWith = Math.round( tileSize * colomScale );
-            int tileHight = Math.round( tileSize * rowScale );
-
+            int tileWith = (int) Math.ceil((double) getWidth() / map.getMapWith());
+            int tileHight = (int) Math.ceil((double) getHeight() / map.getMapHight());
 
 
             for (int i = 0; i < map.getMapHight() ; i++) {

@@ -1,6 +1,3 @@
-
-package towerrush.gameLogic;
-
 import java.util.Arrays;
 
 public class Path {

@@ -1,5 +1,3 @@
-package towerrush.gameLogic;
-
 public class MovementComponent {
 
     private double x;

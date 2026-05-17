@@ -1,6 +1,3 @@
-package towerrush.graphics;
-
-import towerrush.gameLogic.VisualsFactory;
 
 import java.awt.*;
 

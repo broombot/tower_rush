@@ -1,8 +1,6 @@
-package towerrush.gameLogic;
-
 import java.util.stream.Stream;
 
-public class towerUpdater {
+public class TowerUpdater {
 
     public void  updatdateTower( Tower[] towers ){
 

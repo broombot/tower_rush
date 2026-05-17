@@ -1,6 +1,3 @@
-
-package towerrush.gameLogic;
-
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
@@ -45,27 +42,38 @@ public class Map {
             }
         }
 
-        List<List<String>> buffer = Files.readAllLines(Paths.get(fille))
-                .stream()
-                .map(line -> Arrays.asList(line.split(",")))
-                .toList();
+        int numberOfPaths;
 
-        name = buffer.getFirst().getFirst();
-        int numberOfPaths = Integer.parseInt(buffer.getFirst().get(1));
+        try (var is = getClass().getResourceAsStream(fille)) {
+            if (is == null) {
+                throw new IOException("Bestand niet gevonden in resources: " + fille);
+            }
 
-        map = new TileType[buffer.size()][buffer.get(1).size()];
+            // Lees de stream uit
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8));
 
-        for (int i = 1; i < buffer.size() ; i++){
-            for (int j = 0; j < buffer.get(i).size(); j++){
-                map[i-1][j] = TileType.fromInt( Integer.parseInt( buffer.get(i).get(j)));
+            List<List<String>> buffer = reader.lines()
+                    .map(line -> Arrays.asList(line.split(",")))
+                    .toList();
+
+            if (buffer.isEmpty()) throw new IOException("Bestand is leeg");
+
+            name = buffer.get(0).get(0);
+            numberOfPaths = Integer.parseInt(buffer.get(0).get(1));
+
+            map = new TileType[buffer.size() - 1][buffer.get(1).size()];
+
+            for (int i = 1; i < buffer.size(); i++) {
+                for (int j = 0; j < buffer.get(i).size(); j++) {
+                    map[i - 1][j] = TileType.fromInt(Integer.parseInt(buffer.get(i).get(j)));
+                }
             }
         }
-
         paths = new Path[numberOfPaths];
 
         for (int i = 4; i < numberOfPaths + 4; i++) {
             Globals globals = JsePlatform.standardGlobals();
-            LuaValue luaScript = globals.loadfile("src/towerrush/gameLogic/PathFinder.lua").call();
+            LuaValue luaScript = globals.loadfile("src/PathFinder.lua").call();
             LuaValue findPathsFunc = globals.get("findPaths");
 
             if (!findPathsFunc.isnil()) {

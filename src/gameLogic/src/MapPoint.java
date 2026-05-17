@@ -1,7 +1,3 @@
-package towerrush.gameLogic;
-
-import java.util.Objects;
-
 public class MapPoint {
 
     private double x;

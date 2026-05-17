@@ -1,7 +1,3 @@
-package towerrush.graphics;
-
-import towerrush.gameLogic.Map;
-import towerrush.gameLogic.VisualsFactory;
 
 import javax.swing.*;
 

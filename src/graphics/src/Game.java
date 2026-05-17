@@ -1,6 +1,4 @@
-package towerrush.gameLogic;
 
-import towerrush.graphics.GraphicsEngine;
 
 public class Game {
 
@@ -15,7 +13,7 @@ public class Game {
     public Game(GraphicsEngine engine){
         // main game loop
         graphicsEngine = engine;
-        loadedMap = new Map("src/towerrush/levels/map_level1.csv");
+        loadedMap = new Map("/levels/map_level1.csv");
         System.out.println(loadedMap.getName());
         engine.addMap(loadedMap);
         graphicsEngine.startRenderTread();
