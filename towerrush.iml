@@ -16,5 +16,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module" module-name="gameLogic" />
+    <orderEntry type="module" module-name="graphics" />
   </component>
 </module>

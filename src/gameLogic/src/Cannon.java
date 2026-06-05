@@ -1,12 +1,7 @@
-public abstract class Cannon extends Tower{
-
-
-    protected Cannon() {
-        super(200, 2000);
-    }
+public class Cannon extends Tower {
+    public Cannon(double x, double y) {
+        super(200, 3000, x, y);}
 
     @Override
-    void attack() {
-
-    }
+    public void attack() {}
 }

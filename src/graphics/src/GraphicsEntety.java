@@ -3,43 +3,44 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class GraphicsEntety extends JLabel {
+    // relative cordinates are % of the screen with and hight from 0 to 10
 
-    private int x;
-    private int y;
+    private double relativex;
+    private double relativey;
     private int entetySize ;
     private Color color;
 
-    public GraphicsEntety(BufferedImage image, int x, int y,int size) {
+    public GraphicsEntety(BufferedImage image, double x, double y,int size) {
         this.entetySize = size;
         Image scaled = image.getScaledInstance(size,size,Image.SCALE_DEFAULT);
         super(new ImageIcon(scaled));
-        this.x = x;
-        this.y = y;
+        this.relativex = Math.max(Math.min(x,0),100) ;
+        this.relativey = Math.max(Math.min(y,0),100) ;
     }
 
-    public GraphicsEntety(int x, int y, Color color,int size) {
-        this.x = x;
-        this.y = y;
+    public GraphicsEntety(double x, double y, Color color,int size) {
+        this.relativex = Math.max(Math.min(x,0),100);
+        this.relativey = Math.max(Math.min(y,0),100);
         this.color = color;
         this.entetySize = size;
     }
 
-    public GraphicsEntety(int x, int y, Color color) {
-        this.x = x;
-        this.y = y;
+    public GraphicsEntety(double x, double y, Color color) {
+        this.relativex = Math.max(Math.min(x,0),100) ;
+        this.relativey = Math.max(Math.min(y,0),100) ;
         this.color = color;
         this.entetySize = 50;
 
     }
 
-    @Override
-    public int getX() {
-        return x;
+
+    public double getRelativex() {
+        return relativex;
     }
 
-    @Override
-    public int getY() {
-        return y;
+
+    public double getRelativey() {
+        return relativey;
     }
 
 
@@ -63,15 +64,15 @@ public class GraphicsEntety extends JLabel {
     }
 
     public void setX(int x) {
-        this.x = x;
+        this.relativex = x;
     }
 
-    public void setY(int y) {
-        this.y = y;
+    public void setY(double y) {
+        this.relativey = y;
     }
 
-    public  void setPosition(int x,int y){
-        this.x = x;
-        this.y = y;
+    public  void setPosition(double x,double y){
+        this.relativex = x;
+        this.relativey = y;
     }
 }

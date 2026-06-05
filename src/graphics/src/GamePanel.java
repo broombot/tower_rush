@@ -2,8 +2,14 @@
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 
 public class GamePanel extends JPanel {
+
+
 
     private final int originalTileSize = 16;
     private double scale = 2;
@@ -14,6 +20,7 @@ public class GamePanel extends JPanel {
     private final int screenRow = 25;
     private int screenWidth = tileSize * screenCol;
     private int screenHeight = tileSize * screenRow;
+    private List<GraphicsEntety> enties =  new ArrayList<GraphicsEntety>();
 
     private Color placebleColor;
     private Color pathColor;
@@ -21,7 +28,13 @@ public class GamePanel extends JPanel {
     private Color blockedColor;
 
 
-
+    /**
+     * @param blockedColor
+     * @param projectileBlockingColor
+     * @param pathColor
+     * @param placebleColor
+     * @param scale
+     */
 
     public GamePanel(Color blockedColor, Color projectileBlockingColor, Color pathColor, Color placebleColor, double scale) {
         this.blockedColor = blockedColor;
@@ -32,11 +45,15 @@ public class GamePanel extends JPanel {
         reScale();
     }
 
+
+
     public void reScale(){
         tileSize = (int)(originalTileSize * scale);
         screenWidth = tileSize * screenCol;
         screenHeight = tileSize * screenRow;
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
+        //enties.stream().forEach(ent -> {ent.setBounds((int) Math.round(screenWidth * ent.getRelativex()/100),
+         //       (int) Math.round( screenHeight * ent.getRelativey()/100),ent.getSize(),ent.getSize());});
     };
 
 
@@ -45,12 +62,16 @@ public class GamePanel extends JPanel {
     }
 
 
+    /**
+     * @param entety
+     */
     public void addEntety(GraphicsEntety entety){
-
-        entety.setBounds(entety.getX(),entety.getY(),entety.getEntetySize(),entety.getEntetySize());
+        enties.add(entety);
+        entety.setBounds((int) Math.round(screenWidth * entety.getRelativex()/100),
+                         (int) Math.round( screenHeight * entety.getRelativey()/100),
+                         entety.getEntetySize(),entety.getEntetySize());
         this.add(entety);
         this.revalidate();
-
     }
 
     public void paintComponent(Graphics g ){

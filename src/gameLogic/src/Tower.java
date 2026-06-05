@@ -1,15 +1,16 @@
 public abstract class Tower {
 
-    private MapPoint position;
+    protected MapPoint position;
     private int damage;
     private final int price;
     private  int attackTimer;
     private final int attackTime;
     private int range;
 
-    protected Tower(int price, int attackTime) {
+    protected Tower(int price, int attackTime,double x,double y) {
         this.price = price;
         this.attackTime = attackTime;
+        this.position = new MapPoint(x,y);
     }
 
 

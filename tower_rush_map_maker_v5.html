@@ -1,0 +1,290 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+#app{padding:12px 0;font-family:var(--font-sans)}
+#toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:flex-start}
+.tg{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
+.tg label{font-size:11px;color:var(--color-text-secondary);margin-right:2px;display:block;width:100%}
+.tile-btn{min-width:70px;padding:5px 8px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--color-background-primary);color:var(--color-text-primary);transition:all 0.12s;line-height:1.2}
+.tile-btn span.val{font-size:10px;opacity:0.6;font-family:var(--font-mono)}
+.tile-btn:hover{border-color:var(--color-border-secondary)}
+.tile-btn.active{border-color:#378ADD;box-shadow:0 0 0 2px #378ADD33}
+.tile-btn:disabled{opacity:0.35;cursor:not-allowed;border-color:transparent!important;box-shadow:none!important}
+.action-btn{padding:5px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;font-size:12px;font-family:var(--font-sans)}
+.action-btn:hover{background:var(--color-background-secondary)}
+.action-btn.danger{border-color:#E24B4A;color:#A32D2D}
+.action-btn.primary{border-color:#378ADD;color:#185FA5;font-weight:500}
+input[type=number],input[type=text]{padding:4px 6px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)}
+input[type=number]{width:52px;text-align:center}
+input[type=text]{width:110px}
+#path-count-display{font-size:13px;font-weight:500;color:var(--color-text-primary);padding:4px 12px;border-radius:var(--border-radius-md);background:var(--color-background-info);color:var(--color-text-info);border:0.5px solid var(--color-border-info)}
+#grid-scroll{overflow:auto;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:#111118;cursor:crosshair;user-select:none;max-width:100%}
+#grid{display:grid;gap:0}
+.cell{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--font-mono);font-weight:600;border:0.5px solid rgba(255,255,255,0.05);color:#fff;flex-shrink:0;transition:filter 0.05s}
+.cell:hover{filter:brightness(1.4)}
+#info-bar{margin-top:8px;font-size:12px;color:var(--color-text-secondary);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+#validation-bar{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+.vbadge{padding:4px 10px;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;border:0.5px solid}
+.vbadge.ok{background:var(--color-background-success);color:var(--color-text-success);border-color:var(--color-border-success)}
+.vbadge.err{background:var(--color-background-danger);color:var(--color-text-danger);border-color:var(--color-border-danger)}
+.vbadge.warn{background:var(--color-background-warning);color:var(--color-text-warning);border-color:var(--color-border-warning)}
+.vbadge.info{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+</style>
+<h2 class="sr-only">Tower Rush Map Maker — automatische pad teller in CSV</h2>
+<div id="app">
+  <div id="toolbar">
+    <div class="tg">
+      <label>Tegel type</label>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        <button class="tile-btn" data-v="-1">❌<span>IN_VALID</span><span class="val">-1</span></button>
+        <button class="tile-btn active" data-v="0">🟩<span>PLACEABLE</span><span class="val">0</span></button>
+        <button class="tile-btn" data-v="1">🧱<span>BLOCKED</span><span class="val">1</span></button>
+        <button class="tile-btn" data-v="2">🛡️<span>PROJ_BLOCK</span><span class="val">2</span></button>
+        <button class="tile-btn" data-v="3">✖️<span>INTERSECT</span><span class="val">3</span></button>
+        <button class="tile-btn" data-v="4">🔵<span>PATH 1</span><span class="val">4</span></button>
+        <button class="tile-btn" data-v="5" id="btn-path2" disabled>🟠<span>PATH 2</span><span class="val">5</span></button>
+        <button class="tile-btn" data-v="6" id="btn-path3" disabled>🟣<span>PATH 3</span><span class="val">6</span></button>
+      </div>
+    </div>
+    <div class="tg">
+      <label>Kaartinfo</label>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--color-text-secondary)">Naam</span>
+        <input type="text" id="inp-name" value="Level_1">
+        <span style="font-size:12px;color:var(--color-text-secondary)">Paden</span>
+        <div id="path-count-display">0</div>
+      </div>
+    </div>
+    <div class="tg">
+      <label>Kaartgrootte</label>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--color-text-secondary)">Breed</span>
+        <input type="number" id="inp-cols" value="20" min="5" max="60">
+        <span style="font-size:12px;color:var(--color-text-secondary)">Hoog</span>
+        <input type="number" id="inp-rows" value="12" min="5" max="40">
+        <button class="action-btn primary" id="apply-size">Toepassen</button>
+      </div>
+    </div>
+    <div class="tg">
+      <label>Acties</label>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="action-btn" id="fill-btn">Alles PLACEABLE</button>
+        <button class="action-btn danger" id="clear-btn">Alles -1</button>
+        <button class="action-btn primary" id="export-csv">⬇️ Download CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="validation-bar"></div>
+  <div style="margin-top:8px"></div>
+  <div id="grid-scroll"><div id="grid"></div></div>
+  <div id="info-bar">
+    <span id="pos-info">Hover over een cel</span>
+    <span id="sel-info">Geselecteerd: PLACEABLE (0)</span>
+    <span id="count-info"></span>
+  </div>
+</div>
+
+<script>
+const TILE_DEFS={
+  '-1':{label:'IN_VALID',  bg:'#3a0000',fg:'#ff6666'},
+  '0': {label:'PLACEABLE', bg:'#1a3a1a',fg:'#66cc66'},
+  '1': {label:'BLOCKED',   bg:'#2a2a2a',fg:'#aaaaaa'},
+  '2': {label:'PROJ_BLOCK',bg:'#1a2a3a',fg:'#6699cc'},
+  '3': {label:'INTERSECT', bg:'#3a2a00',fg:'#ffcc44'},
+  '4': {label:'PATH 1',    bg:'#0a2a4a',fg:'#4499ff'},
+  '5': {label:'PATH 2',    bg:'#3a1a00',fg:'#ff8844'},
+  '6': {label:'PATH 3',    bg:'#2a0a3a',fg:'#cc66ff'},
+};
+
+let cols=20,rows=12,map=[],painting=false,selVal=0;
+
+function initMap(c,r,fill=0){cols=c;rows=r;map=Array.from({length:r},()=>Array(c).fill(fill));}
+
+function styleCell(cell,v){
+  const td=TILE_DEFS[String(v)]||{bg:'#111',fg:'#fff'};
+  cell.style.background=td.bg;
+  cell.style.color=td.fg;
+  cell.textContent=v;
+}
+
+function renderGrid(){
+  const grid=document.getElementById('grid');
+  grid.style.gridTemplateColumns=`repeat(${cols},26px)`;
+  grid.innerHTML='';
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const cell=document.createElement('div');
+      cell.className='cell';
+      styleCell(cell,map[r][c]);
+      cell.addEventListener('mousedown',e=>{painting=true;paint(r,c);e.preventDefault();});
+      cell.addEventListener('mouseenter',()=>{
+        if(painting)paint(r,c);
+        const v=map[r][c];
+        document.getElementById('pos-info').textContent=`Cel (${c},${r}) — ${TILE_DEFS[String(v)]?.label||'?'} [${v}]`;
+      });
+      grid.appendChild(cell);
+    }
+  }
+  validate();
+}
+
+function paint(r,c){
+  map[r][c]=selVal;
+  styleCell(document.getElementById('grid').children[r*cols+c],selVal);
+  validate();
+}
+
+function isConnected(pathVal){
+  const cells=[];
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) if(map[r][c]===pathVal||map[r][c]===3) cells.push([r,c]);
+  if(cells.length===0) return {connected:false,length:0,isolated:[]};
+  const pathSet=new Set(cells.map(([r,c])=>r+','+c));
+  const starts=cells.filter(([r,c])=>r===0||r===rows-1||c===0||c===cols-1);
+  if(starts.length===0) return {connected:false,length:cells.length,isolated:cells};
+  const visited=new Set();
+  const queue=[starts[0]];
+  visited.add(starts[0][0]+','+starts[0][1]);
+  while(queue.length){
+    const [cr,cc]=queue.shift();
+    for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=cr+dr,nc=cc+dc,k=nr+','+nc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&pathSet.has(k)&&!visited.has(k)){visited.add(k);queue.push([nr,nc]);}
+    }
+  }
+  const isolated=cells.filter(([r,c])=>!visited.has(r+','+c));
+  return {connected:isolated.length===0,length:cells.length,isolated};
+}
+
+function countValidPaths(){
+  const flat=map.flat();
+  const hasP1=flat.includes(4);
+  const hasP2=flat.includes(5);
+  const hasP3=flat.includes(6);
+  const p1v=hasP1&&isConnected(4).connected;
+  const p2v=hasP2&&p1v&&isConnected(5).connected;
+  const p3v=hasP3&&p2v&&isConnected(6).connected;
+  if(p3v) return 3;
+  if(p2v) return 2;
+  if(p1v) return 1;
+  return 0;
+}
+
+function validate(){
+  const flat=map.flat();
+  const hasP1=flat.includes(4);
+  const hasP2=flat.includes(5);
+  const hasP3=flat.includes(6);
+  const p1check=hasP1?isConnected(4):{connected:false,length:0,isolated:[]};
+  const p2check=hasP2?isConnected(5):{connected:false,length:0,isolated:[]};
+  const p3check=hasP3?isConnected(6):{connected:false,length:0,isolated:[]};
+  const p1valid=hasP1&&p1check.connected;
+  const p2valid=hasP2&&p1valid&&p2check.connected;
+  const p3valid=hasP3&&p2valid&&p3check.connected;
+
+  // auto pad count
+  const pathCount=p3valid?3:p2valid?2:p1valid?1:0;
+  document.getElementById('path-count-display').textContent=pathCount;
+
+  // unlock buttons
+  const btn2=document.getElementById('btn-path2');
+  const btn3=document.getElementById('btn-path3');
+  btn2.disabled=!p1valid;
+  btn3.disabled=!p2valid;
+  if(selVal===5&&!p1valid){selVal=0;document.querySelectorAll('.tile-btn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.v)===0));}
+  if(selVal===6&&!p2valid){selVal=0;document.querySelectorAll('.tile-btn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.v)===0));}
+
+  // badges
+  const bar=document.getElementById('validation-bar');
+  bar.innerHTML='';
+  function badge(cls,txt){const d=document.createElement('div');d.className='vbadge '+cls;d.textContent=txt;bar.appendChild(d);}
+
+  if(!hasP1) badge('warn','Geen PATH 1 getekend');
+  else if(!p1check.connected) badge('err',` PATH 1 niet aaneengesloten (${p1check.isolated.length} losse cel${p1check.isolated.length!==1?'s':''})`);
+  else badge('ok',` PATH 1 OK — ${p1check.length} cellen`);
+
+  if(hasP2){
+    if(!p1valid) badge('err',' PATH 2 vereist geldig PATH 1');
+    else if(!p2check.connected) badge('err',` PATH 2 niet aaneengesloten`);
+    else badge('ok',` PATH 2 OK — ${p2check.length} cellen`);
+  } else if(p1valid) badge('info','ℹ PATH 2 beschikbaar');
+
+  if(hasP3){
+    if(!p2valid) badge('err',' PATH 3 vereist geldig PATH 2');
+    else if(!p3check.connected) badge('err','PATH 3 niet aaneengesloten');
+    else badge('ok',`PATH 3 OK — ${p3check.length} cellen`);
+  } else if(p2valid) badge('info','ℹ PATH 3 beschikbaar');
+
+  const counts={};
+  flat.forEach(v=>counts[v]=(counts[v]||0)+1);
+  document.getElementById('count-info').textContent=
+    Object.entries(counts).sort((a,b)=>Number(a[0])-Number(b[0]))
+    .map(([k,v])=>`${TILE_DEFS[k]?.label||k}:${v}`).join('  ');
+
+  return {p1valid,p2valid,p3valid,p1check,p2check,p3check,hasP1,hasP2,hasP3,pathCount};
+}
+
+function applySize(){
+  const nc=Math.max(5,Math.min(60,parseInt(document.getElementById('inp-cols').value)||20));
+  const nr=Math.max(5,Math.min(40,parseInt(document.getElementById('inp-rows').value)||12));
+  const old=map;
+  map=Array.from({length:nr},(_,r)=>Array.from({length:nc},(_,c)=>(r<rows&&c<cols)?old[r][c]:0));
+  cols=nc;rows=nr;
+  renderGrid();
+}
+
+document.querySelectorAll('.tile-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(btn.disabled)return;
+    document.querySelectorAll('.tile-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    selVal=parseInt(btn.dataset.v);
+    document.getElementById('sel-info').textContent=`Geselecteerd: ${TILE_DEFS[String(selVal)]?.label||'?'} (${selVal})`;
+  });
+});
+
+document.getElementById('apply-size').addEventListener('click',applySize);
+document.getElementById('inp-cols').addEventListener('keydown',e=>{if(e.key==='Enter')applySize();});
+document.getElementById('inp-rows').addEventListener('keydown',e=>{if(e.key==='Enter')applySize();});
+document.getElementById('fill-btn').addEventListener('click',()=>{map=Array.from({length:rows},()=>Array(cols).fill(0));renderGrid();});
+document.getElementById('clear-btn').addEventListener('click',()=>{if(confirm('Alles op -1 zetten?')){map=Array.from({length:rows},()=>Array(cols).fill(-1));renderGrid();}});
+
+document.getElementById('export-csv').addEventListener('click',()=>{
+  const v=validate();
+  const name=document.getElementById('inp-name').value.trim()||'Level_1';
+  const flat=map.flat();
+
+  const meta=[
+    `${name},${v.pathCount}`,
+  ].join('\n');
+
+  const csv=meta+'\n'+map.map(row=>row.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`${name.replace(/\s+/g,'_')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  const btn=document.getElementById('export-csv');
+  btn.textContent='Gedownload!';
+  setTimeout(()=>btn.textContent='Download CSV',2000);
+});
+
+document.addEventListener('mouseup',()=>painting=false);
+
+// load CSV
+(function(){
+  const CSV=`Level_1,1\n0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0\n4,4,4,4,4,4,4,4,4,4,4,1,1,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,2,4,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0\n0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4\n0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0`;
+  const lines=CSV.split('\n').filter(l=>l&&!l.startsWith('#'));
+  const header=lines[0].split(',');
+  document.getElementById('inp-name').value=header[0]||'Level_1';
+  const grid=lines.slice(1).map(l=>l.split(',').map(Number));
+  rows=grid.length;cols=grid[0].length;
+  document.getElementById('inp-cols').value=cols;
+  document.getElementById('inp-rows').value=rows;
+  map=grid;
+  renderGrid();
+})();
+</script>

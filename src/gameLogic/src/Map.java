@@ -73,7 +73,7 @@ public class Map {
 
         for (int i = 4; i < numberOfPaths + 4; i++) {
             Globals globals = JsePlatform.standardGlobals();
-            LuaValue luaScript = globals.loadfile("src/PathFinder.lua").call();
+            LuaValue luaScript = globals.loadfile("src/gameLogic/src/PathFinder.lua").call();
             LuaValue findPathsFunc = globals.get("findPaths");
 
             if (!findPathsFunc.isnil()) {

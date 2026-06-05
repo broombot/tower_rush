@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 
 public class GraphicsEngine implements Runnable {
@@ -8,6 +7,9 @@ public class GraphicsEngine implements Runnable {
     private MenuPanel menuPanel;
     private Thread renderTread;
     private VisualsFactory visualsFactory = new OriginalVisualsFactory();
+
+    // Tower placer is created once and reused when a map is loaded.
+    private TowerPlacer towerPlacer;
 
     public void setVisualsFactory(VisualsFactory visualsFactory) {
         this.visualsFactory = visualsFactory;
@@ -37,6 +39,8 @@ public class GraphicsEngine implements Runnable {
             }
         });
 
+        // Create the placer once; it attaches its own mouse listener to gamePanel.
+        towerPlacer = new TowerPlacer(gamePanel);
     }
 
     private void draw(){
@@ -47,16 +51,42 @@ public class GraphicsEngine implements Runnable {
         }
     }
 
+    /**
+     * Load a map into the game panel and the tower placer.
+     */
     public void addMap(Map map){
         gamePanel.setMap(map);
+        towerPlacer.setMap(map);
     }
 
     public void addEntety(GraphicsEntety entety){
-
         gamePanel.addEntety(entety);
-
     }
 
+    // ---------------------------------------------------------------
+    // Tower-placer API
+    // ---------------------------------------------------------------
+
+    /**
+     * Activate or deactivate tower-placement mode.
+     * While active, clicking a PLACEABLE tile calls every registered listener.
+     */
+    public void setTowerPlacerActive(boolean active) {
+        towerPlacer.setActive(active);
+    }
+
+    public boolean isTowerPlacerActive() {
+        return towerPlacer.isActive();
+    }
+
+    /**
+     * Register a callback that is fired whenever the player successfully
+     * places a tower.  The Game class should use this to spawn the actual
+     * tower entity.
+     */
+    public void addTowerPlacedListener(TowerPlacer.TowerPlacedListener listener) {
+        towerPlacer.addListener(listener);
+    }
 
 
     public void startRenderTread(){
@@ -68,8 +98,6 @@ public class GraphicsEngine implements Runnable {
         this.renderTread = null;
     }
 
-
-
     @Override
     public void run() {
         while (renderTread != null) {
@@ -77,8 +105,8 @@ public class GraphicsEngine implements Runnable {
             try {
                 Thread.sleep(20);
             } catch (InterruptedException e) {
-                System.out.println("\t\\u001B[38m \\u001B[41m tread was interrupted wile sleping");
-                System.out.println(e.getMessage() + "\\u001B[0m \\u001B[0m");
+                System.out.println("\t\u001B[38m \u001B[41m thread was interrupted while sleeping");
+                System.out.println(e.getMessage() + "\u001B[0m \u001B[0m");
             }
         }
     }

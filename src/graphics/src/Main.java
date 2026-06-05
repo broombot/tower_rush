@@ -1,5 +1,5 @@
 
 
 void main() {
-    Game game = new Game(new GraphicsEngine());
+    GraphicsLoop graphicsLoop = new GraphicsLoop(new GraphicsEngine());
 }

@@ -1,5 +1,7 @@
 
 
+
+
 public interface VisualsFactory {
 
     GraphicsEntety addEnemy(int x, int y);
@@ -8,5 +10,6 @@ public interface VisualsFactory {
     GraphicsEntety addProjectile(int x, int y);
     GamePanel creatGamePanel();
     MenuPanel creatMenuPanel();
+
 
 }
