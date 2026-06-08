@@ -1,12 +1,19 @@
+package graphics.src;
+import gameLogic.src.Map;
+import gameLogic.src.LevelCatalog;
+
+import java.awt.event.KeyListener;
+import java.util.List;
 import javax.swing.*;
 
 public class GraphicsEngine implements Runnable {
 
-    private boolean inMenu;
+    private volatile boolean inMenu;
     private GamePanel gamePanel;
     private MenuPanel menuPanel;
-    private Thread renderTread;
+    private volatile Thread renderTread;
     private VisualsFactory visualsFactory = new OriginalVisualsFactory();
+    JFrame window;
 
     // Tower placer is created once and reused when a map is loaded.
     private TowerPlacer towerPlacer;
@@ -19,14 +26,17 @@ public class GraphicsEngine implements Runnable {
 
         inMenu = false;
 
-        JFrame window = new JFrame();
+        window = new JFrame();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(true);
         window.setTitle("tower rush");
 
         gamePanel = visualsFactory.creatGamePanel();
         menuPanel = visualsFactory.creatMenuPanel();
-        window.add(gamePanel);
+        gamePanel.setFocusable(true);
+        menuPanel.setFocusable(true);
+        menuPanel.setPreferredSize(gamePanel.getPreferredSize());
+        window.setContentPane(gamePanel);
         window.pack();
 
         window.setLocationRelativeTo(null);
@@ -51,6 +61,24 @@ public class GraphicsEngine implements Runnable {
         }
     }
 
+    public void setInMenu(boolean inMenu) {
+        if (this.inMenu == inMenu) {
+            return;
+        }
+
+        this.inMenu = inMenu;
+        SwingUtilities.invokeLater(() -> {
+            window.setContentPane(inMenu ? menuPanel : gamePanel);
+            window.revalidate();
+            window.repaint();
+            if (inMenu) {
+                menuPanel.requestFocusInWindow();
+            } else {
+                gamePanel.requestFocusInWindow();
+            }
+        });
+    }
+
     /**
      * Load a map into the game panel and the tower placer.
      */
@@ -63,9 +91,10 @@ public class GraphicsEngine implements Runnable {
         gamePanel.addEntety(entety);
     }
 
-    // ---------------------------------------------------------------
-    // Tower-placer API
-    // ---------------------------------------------------------------
+    public void clearGameEntities() {
+        gamePanel.clearEnteties();
+    }
+
 
     /**
      * Activate or deactivate tower-placement mode.
@@ -74,6 +103,37 @@ public class GraphicsEngine implements Runnable {
     public void setTowerPlacerActive(boolean active) {
         towerPlacer.setActive(active);
     }
+
+    public void setMenuActions(Runnable primaryAction, Runnable secondaryAction, Runnable quitAction) {
+        menuPanel.setPrimaryAction(primaryAction);
+        menuPanel.setSecondaryAction(secondaryAction);
+        menuPanel.setQuitAction(quitAction);
+    }
+
+    public void setAvailableLevels(List<LevelCatalog.LevelEntry> levels) {
+        menuPanel.setAvailableLevels(levels);
+    }
+
+    public String getSelectedLevelResource() {
+        return menuPanel.getSelectedLevelResource();
+    }
+
+    public void showStartScreen() {
+        menuPanel.showStartScreen();
+    }
+
+    public void showPauseScreen() {
+        menuPanel.showPauseScreen();
+    }
+
+    public void registerKeyListener(KeyListener listener) {
+        window.addKeyListener(listener);
+        gamePanel.addKeyListener(listener);
+        menuPanel.addKeyListener(listener);
+
+        SwingUtilities.invokeLater(() -> gamePanel.requestFocusInWindow());
+    }
+
 
     public boolean isTowerPlacerActive() {
         return towerPlacer.isActive();
@@ -88,14 +148,26 @@ public class GraphicsEngine implements Runnable {
         towerPlacer.addListener(listener);
     }
 
-
     public void startRenderTread(){
         renderTread = new Thread(this);
         renderTread.start();
     }
 
+    public int getScreenWidth(){
+        return gamePanel.getScreenWidth();
+    }
+
+    public int getScreenHeight(){
+        return gamePanel.getScreenHeight();
+    }
+
     public void stopRenderThread(){
         this.renderTread = null;
+    }
+
+    public void shutdown() {
+        stopRenderThread();
+        window.dispose();
     }
 
     @Override

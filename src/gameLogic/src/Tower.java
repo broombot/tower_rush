@@ -1,20 +1,25 @@
+package gameLogic.src;
+
+import graphics.src.GraphicsEntety;
+
 public abstract class Tower {
 
-    protected MapPoint position;
+    protected final MapPoint position;
     private int damage;
     private final int price;
-    private  int attackTimer;
+    private StopWatch attackTimer;
     private final int attackTime;
     private int range;
 
-    protected Tower(int price, int attackTime,double x,double y) {
+    protected Tower(int price, int attackTime, double x, double y) {
         this.price = price;
         this.attackTime = attackTime;
         this.position = new MapPoint(x,y);
+        this.attackTimer = new StopWatch(attackTime);
     }
 
 
-    abstract void attack();
+    public abstract Projectile attack(Enemy target);
 
     public int getDamage() {
         return damage;
@@ -24,16 +29,20 @@ public abstract class Tower {
         this.damage = damage;
     }
 
-    public int getAttackTimer() {
-        return attackTimer;
-    }
+    public boolean isReadyToAttack(){
+      return attackTimer.isFinished();
+    };
 
-    public void setAttackTimer(int attackTimer) {
-        this.attackTimer = attackTimer;
-    }
+    public void resetTimer(){
+        attackTimer = new StopWatch(attackTime);
+    };
 
     public int getAttackTime() {
         return attackTime;
+    }
+
+    public MapPoint getPosition() {
+        return position;
     }
 
     public int getRange() {
@@ -43,4 +52,6 @@ public abstract class Tower {
     public void setRange(int range) {
         this.range = range;
     }
+
+    public abstract GraphicsEntety getGraphics();
 }

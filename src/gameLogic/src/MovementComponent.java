@@ -1,3 +1,5 @@
+package gameLogic.src;
+
 public class MovementComponent {
 
     private double x;

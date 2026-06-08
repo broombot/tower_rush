@@ -1,3 +1,4 @@
+package gameLogic.src;
 
 /**
  * Value and its Definition of Grid Cel Types

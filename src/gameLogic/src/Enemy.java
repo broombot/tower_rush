@@ -1,3 +1,5 @@
+package gameLogic.src;
+
 public abstract class Enemy {
     private MovementComponent movementComponent;
     private int health;
@@ -20,6 +22,18 @@ public abstract class Enemy {
 
     public int getDamage() {
         return damage;
+    }
+
+    public boolean isAlive() {
+        return health > 0;
+    }
+
+    public MapPoint getPosition() {
+        return new MapPoint(movementComponent.getX(), movementComponent.getY());
+    }
+
+    public MovementComponent getMovementComponent() {
+        return movementComponent;
     }
 
     public void receiveDamage(int damage){

@@ -1,14 +1,18 @@
 import java.util.ArrayList;
 import java.util.List;
+import gameLogic.src.*;
+import graphics.src.*;
 
 public final class Game {
 
     private static Game instance;
-    private GameLogicLoop  gameLogicLoop;
-    private GraphicsLoop  graphicsLoop;
+    private GameLogicLoop gameLogicLoop;
+    private VisualLoop visualLoop;
     private List<MovementComponent> movementComponents =  new ArrayList<MovementComponent>();
     private List<Tower> towers = new ArrayList<Tower>();
     private List<Enemy> enemies = new ArrayList<Enemy>();
+    private List<Projectile> projectiles = new ArrayList<Projectile>();
+    private boolean close = false;
 
 
 
@@ -26,20 +30,32 @@ public final class Game {
 
 
     public void run(){
-        graphicsLoop = new GraphicsLoop(new GraphicsEngine());
-        gameLogicLoop = new GameLogicLoop();
-        boolean isInMenu = false;
+        visualLoop = new VisualLoop(new GraphicsEngine(),enemies,projectiles,towers,movementComponents);
+        gameLogicLoop = new GameLogicLoop(enemies,towers,movementComponents,projectiles);
+        gameLogicLoop.start();
 
-        while (true) {
-            gameLogicLoop.;
+        while (!close) {
+            if (visualLoop.isInMenu() || visualLoop.isPaused()) {
+                gameLogicLoop.pauseLoop();
+            } else {
+                gameLogicLoop.resumeLoop();
+            }
+            visualLoop.update();
 
-
-            while ()
+            try {
+                Thread.sleep(16);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
 
         }
 
+        gameLogicLoop.shutdown();
 
     };
+
+
 
 
 }

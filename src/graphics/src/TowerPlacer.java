@@ -1,3 +1,7 @@
+package graphics.src;
+
+import gameLogic.src.*;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -12,8 +16,12 @@ import javax.swing.*;
 public class TowerPlacer {
 
     public interface TowerPlacedListener {
-        /** Called when the user successfully places a tower. */
-        void onTowerPlaced(int tileCol, int tileRow, int pixelX, int pixelY);
+        /** Called with zero-based map coordinates: tileCol = x, tileRow = y. */
+        void onTowerPlaced(int tileCol, int tileRow, int pixelX, int pixelY,Towers tower);
+    }
+
+    public Towers[][] getOccupied() {
+        return occupied;
     }
 
     private final GamePanel gamePanel;
@@ -22,7 +30,7 @@ public class TowerPlacer {
     private final List<TowerPlacedListener> listeners = new ArrayList<>();
 
     // Tracks which tiles already have a tower so we don't double-place.
-    private boolean[][] occupied;
+    private Towers[][] occupied;
 
     public TowerPlacer(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
@@ -37,7 +45,12 @@ public class TowerPlacer {
     /** Supply (or update) the map that is currently loaded. */
     public void setMap(Map map) {
         this.map = map;
-        this.occupied = new boolean[map.getMapHight()][map.getMapWith()];
+        this.occupied = new Towers[map.getMapHight()][map.getMapWith()];
+        for (int row = 0; row < occupied.length; row++) {
+            for (int col = 0; col < occupied[row].length; col++) {
+                occupied[row][col] = Towers.FREE;
+            }
+        }
     }
 
     /** Enable / disable the placer (e.g. toggle with a button). */
@@ -74,11 +87,11 @@ public class TowerPlacer {
         if (col < 0 || col >= cols || row < 0 || row >= rows) return;
 
         // Only allow placement on PLACEABLE tiles
-        TileType tile = map.getMap()[row][col];
+        gameLogic.src.TileType tile = map.getMap()[row][col];
         if (tile != TileType.PLACEABLE) return;
 
         // Prevent placing two towers on the same tile
-        if (occupied[row][col]) return;
+        if (occupied[row][col].ocupide()) return;
 
         // Top-left pixel of the tile, centred for the entity
         int px = col * tileW;
@@ -92,18 +105,30 @@ public class TowerPlacer {
 
         JMenuItem placeArcher = new JMenuItem("Place archer");
         placeArcher.addActionListener(e -> {
-            if (occupied[tileRow][tileCol]) return;
-            occupied[tileRow][tileCol] = true;
+            if (occupied[tileRow][tileCol].ocupide()) return;
+            occupied[tileRow][tileCol] = Towers.Archer;
 
             for (TowerPlacedListener listener : listeners) {
-                listener.onTowerPlaced(tileCol, tileRow, tilePixelX, tilePixelY);
+                listener.onTowerPlaced(tileCol, tileRow, tilePixelX, tilePixelY,Towers.Archer);
             }
         });
 
-        JMenuItem cancel = new JMenuItem("Annuleer");
+        JMenuItem placeCanon = new JMenuItem("Place Cannon");
+        placeCanon.addActionListener(e -> {
+            if (occupied[tileRow][tileCol].ocupide()) return;
+            occupied[tileRow][tileCol] = Towers.Cannon;
+
+            for (TowerPlacedListener listener : listeners) {
+                listener.onTowerPlaced(tileCol, tileRow, tilePixelX, tilePixelY,Towers.Cannon);
+            }
+        });
+
+        JMenuItem cancel = new JMenuItem("cancel");
         cancel.addActionListener(e -> placeMenu.setVisible(false));
 
         placeMenu.add(placeArcher);
+        placeMenu.addSeparator();
+        placeMenu.add(placeCanon);
         placeMenu.addSeparator();
         placeMenu.add(cancel);
 

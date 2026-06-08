@@ -1,7 +1,11 @@
+package graphics.src;
 
+import gameLogic.src.Map;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -42,6 +46,14 @@ public class GamePanel extends JPanel {
         this.pathColor = pathColor;
         this.placebleColor = placebleColor;
         this.scale = scale;
+        setLayout(null);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateEntityBounds();
+                repaint();
+            }
+        });
         reScale();
     }
 
@@ -52,8 +64,9 @@ public class GamePanel extends JPanel {
         screenWidth = tileSize * screenCol;
         screenHeight = tileSize * screenRow;
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        //enties.stream().forEach(ent -> {ent.setBounds((int) Math.round(screenWidth * ent.getRelativex()/100),
-         //       (int) Math.round( screenHeight * ent.getRelativey()/100),ent.getSize(),ent.getSize());});
+        updateEntityBounds();
+        enties.stream().forEach(ent -> {ent.setBounds((int) Math.round(screenWidth * ent.getRelativex()/100),
+                (int) Math.round( screenHeight * ent.getRelativey()/100),ent.getEntetySize(),ent.getEntetySize());});
     };
 
 
@@ -67,11 +80,75 @@ public class GamePanel extends JPanel {
      */
     public void addEntety(GraphicsEntety entety){
         enties.add(entety);
-        entety.setBounds((int) Math.round(screenWidth * entety.getRelativex()/100),
-                         (int) Math.round( screenHeight * entety.getRelativey()/100),
-                         entety.getEntetySize(),entety.getEntetySize());
+        storeRelativePosition(entety);
+        updateEntityBounds(entety);
         this.add(entety);
         this.revalidate();
+        this.repaint();
+    }
+
+    public void clearEnteties() {
+        this.removeAll();
+        enties.clear();
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void storeRelativePosition(GraphicsEntety entety) {
+        int referenceWidth = getReferenceWidth();
+        int referenceHeight = getReferenceHeight();
+
+        if (referenceWidth <= 0 || referenceHeight <= 0) {
+            return;
+        }
+
+        double relativeX = entety.getRelativex() * 100.0 / referenceWidth;
+        double relativeY = entety.getRelativey() * 100.0 / referenceHeight;
+        entety.setPosition(relativeX, relativeY);
+    }
+
+    private void updateEntityBounds() {
+        for (GraphicsEntety entety : enties) {
+            updateEntityBounds(entety);
+        }
+    }
+
+    private void updateEntityBounds(GraphicsEntety entety) {
+        int referenceWidth = getReferenceWidth();
+        int referenceHeight = getReferenceHeight();
+
+        if (referenceWidth <= 0 || referenceHeight <= 0) {
+            return;
+        }
+
+        int x = (int) Math.round(referenceWidth * entety.getRelativex() / 100.0);
+        int y = (int) Math.round(referenceHeight * entety.getRelativey() / 100.0);
+        entety.setBounds(x, y, entety.getEntetySize(), entety.getEntetySize());
+    }
+
+    private int getReferenceWidth() {
+        int currentWidth = getWidth();
+        if (currentWidth > 0) {
+            return currentWidth;
+        }
+
+        if (getPreferredSize() != null) {
+            return getPreferredSize().width;
+        } else {
+            return screenWidth;
+        }
+    }
+
+    private int getReferenceHeight() {
+        int currentHeight = getHeight();
+        if (currentHeight > 0) {
+            return currentHeight;
+        }
+        if (getPreferredSize() != null) {
+            return getPreferredSize().height;
+        } else {
+            return screenHeight;
+        }
     }
 
     public void paintComponent(Graphics g ){
@@ -117,16 +194,17 @@ public class GamePanel extends JPanel {
 
     public void removeEntety(GraphicsEntety entety){
         this.remove(entety);
+        enties.remove(entety);
         this.revalidate();
     }
 
     public int getScreenWidth() {
-        return screenWidth;
+        return getReferenceWidth();
     }
 
 
     public int getScreenHeight() {
-        return screenHeight;
+        return getReferenceHeight();
     }
 
 

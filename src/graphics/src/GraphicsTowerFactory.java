@@ -1,3 +1,8 @@
+package graphics.src;
+
+import gameLogic.src.ArcherTower;
+import graphics.src.towers.ArcherTowerGraphics;
+import graphics.src.towers.GraphicsCannon;
 
 
 /**
@@ -7,14 +12,13 @@
 public class GraphicsTowerFactory implements TowerFactory {
 
     @Override
-    public ArcherTower createArcherTower(double x, double y , int screenW, int screenH) {
-        // Maakt de grafische variant van de boogschuttertoren aan
-        return new ArcherTowerGraphics(x, y);
+    public ArcherTower createArcherTower(double x, double y , int pixelX, int pixelY) {
+        return new ArcherTowerGraphics(x, y, pixelX, pixelY);
     }
 
     @Override
-    public GraphicsCannon createCannonTower(double x, double y,int screenW, int screenH) {
+    public GraphicsCannon createCannonTower(double x, double y, int pixelX, int pixelY) {
         // Maakt de grafische variant van de kanontoren aan
-        return new GraphicsCannon(x, y);
+        return new GraphicsCannon(x, y, pixelX, pixelY);
     }
 }

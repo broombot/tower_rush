@@ -1,12 +1,18 @@
+package gameLogic.src;
+
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,13 +50,16 @@ public class Map {
 
         int numberOfPaths;
 
-        try (var is = getClass().getResourceAsStream(fille)) {
-            if (is == null) {
-                throw new IOException("Bestand niet gevonden in resources: " + fille);
-            }
+        InputStream is = getClass().getResourceAsStream(fille);
+        if (is == null && !fille.startsWith("/")) {
+            is = getClass().getResourceAsStream("/" + fille);
+        }
+        if (is == null) {
+            throw new IOException("Bestand niet gevonden in resources: " + fille);
+        }
 
-            // Lees de stream uit
-            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8));
+        try (InputStream inputStream = is;
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
 
             List<List<String>> buffer = reader.lines()
                     .map(line -> Arrays.asList(line.split(",")))
@@ -69,6 +78,7 @@ public class Map {
                 }
             }
         }
+
         paths = new Path[numberOfPaths];
 
         for (int i = 4; i < numberOfPaths + 4; i++) {

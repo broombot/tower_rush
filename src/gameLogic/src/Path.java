@@ -1,3 +1,5 @@
+package gameLogic.src;
+
 import java.util.Arrays;
 
 public class Path {

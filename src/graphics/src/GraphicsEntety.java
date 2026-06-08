@@ -1,9 +1,11 @@
+package graphics.src;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class GraphicsEntety extends JLabel {
-    // relative cordinates are % of the screen with and hight from 0 to 10
+    // Position stored as a percentage of the current GamePanel size.
 
     private double relativex;
     private double relativey;
@@ -11,27 +13,30 @@ public class GraphicsEntety extends JLabel {
     private Color color;
 
     public GraphicsEntety(BufferedImage image, double x, double y,int size) {
+        super();
         this.entetySize = size;
         Image scaled = image.getScaledInstance(size,size,Image.SCALE_DEFAULT);
-        super(new ImageIcon(scaled));
-        this.relativex = Math.max(Math.min(x,0),100) ;
-        this.relativey = Math.max(Math.min(y,0),100) ;
+        setIcon(new ImageIcon(scaled));
+        this.relativex = x;
+        this.relativey = y;
     }
 
     public GraphicsEntety(double x, double y, Color color,int size) {
-        this.relativex = Math.max(Math.min(x,0),100);
-        this.relativey = Math.max(Math.min(y,0),100);
+        this.relativex = x;
+        this.relativey = y;
         this.color = color;
         this.entetySize = size;
     }
 
     public GraphicsEntety(double x, double y, Color color) {
-        this.relativex = Math.max(Math.min(x,0),100) ;
-        this.relativey = Math.max(Math.min(y,0),100) ;
+        this.relativex = x;
+        this.relativey = y;
         this.color = color;
         this.entetySize = 50;
 
     }
+
+
 
 
     public double getRelativex() {
@@ -50,13 +55,13 @@ public class GraphicsEntety extends JLabel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-
-        g2.setColor(color);
-        g2.fillOval(0,0,entetySize, entetySize);
-
-
         super.paintComponent(g);
+
+        if (color != null) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setColor(color);
+            g2.fillOval(0,0,entetySize, entetySize);
+        }
     }
 
     public int getEntetySize() {
