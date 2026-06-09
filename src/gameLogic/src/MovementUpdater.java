@@ -8,9 +8,13 @@ public class MovementUpdater {
 
         Stream.of(movementComponents).forEach(
                 mc -> {
-                   if (mc.getSpeed() < mc.getTarget().distance(new MapPoint(mc.getX(), mc.getY()))) {
-                       mc.setX(mc.getX() + mc.getSpeed() * Math.cos(Math.atan(mc.getTarget().getY() / mc.getTarget().getX())));
-                       mc.setY(mc.getY() + mc.getSpeed() * Math.sin(Math.atan(mc.getTarget().getY() / mc.getTarget().getX())));
+                   double distance = mc.getTarget().distance(new MapPoint(mc.getX(), mc.getY()));
+                   if (mc.getSpeed() < distance) {
+                       double dx = mc.getTarget().getX() - mc.getX();
+                       double dy = mc.getTarget().getY() - mc.getY();
+                       double angle = Math.atan2(dy, dx);
+                       mc.setX(mc.getX() + mc.getSpeed() * Math.cos(angle));
+                       mc.setY(mc.getY() + mc.getSpeed() * Math.sin(angle));
                    }else {
                        mc.setX(mc.getTarget().getX());
                        mc.setY(mc.getTarget().getY());
@@ -21,3 +25,4 @@ public class MovementUpdater {
     }
 
 }
+

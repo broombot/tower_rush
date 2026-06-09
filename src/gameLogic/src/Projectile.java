@@ -1,6 +1,6 @@
 package gameLogic.src;
 
-public class Projectile {
+public abstract class Projectile {
     private final MovementComponent movementComponent;
     private final int damage;
     private final StopWatch life;
@@ -38,12 +38,11 @@ public class Projectile {
         if (distance <= movementComponent.getSpeed() || distance == 0) {
             movementComponent.setX(target.getX());
             movementComponent.setY(target.getY());
-            return;
+        } else {
+            double ratio = movementComponent.getSpeed() / distance;
+            movementComponent.setX(movementComponent.getX() + dx * ratio);
+            movementComponent.setY(movementComponent.getY() + dy * ratio);
         }
-
-        double ratio = movementComponent.getSpeed() / distance;
-        movementComponent.setX(movementComponent.getX() + dx * ratio);
-        movementComponent.setY(movementComponent.getY() + dy * ratio);
 
         if (targetEnemy != null && targetEnemy.isAlive() && reachedTarget() && !damageApplied) {
             targetEnemy.receiveDamage(damage);

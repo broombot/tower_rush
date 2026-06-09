@@ -68,7 +68,7 @@ public class GraphicsEntety extends JLabel {
         return entetySize;
     }
 
-    public void setX(int x) {
+    public void setX(double x) {
         this.relativex = x;
     }
 
