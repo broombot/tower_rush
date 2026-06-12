@@ -2,9 +2,8 @@ package gameLogic.src.projectiles;
 
 import gameLogic.src.Enemy;
 import gameLogic.src.MapPoint;
-import gameLogic.src.Projectile;
 
-public class Arrow extends Projectile {
+public abstract class Arrow extends Projectile {
     public Arrow(int x, int y, MapPoint target) {
         super(x, y, 10, target, 50, 1000);
     }

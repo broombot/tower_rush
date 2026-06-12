@@ -1,4 +1,7 @@
-package gameLogic.src;
+package gameLogic.src.projectiles;
+
+import gameLogic.src.*;
+import graphics.src.GraphicsEntety;
 
 public abstract class Projectile {
     private final MovementComponent movementComponent;
@@ -6,6 +9,7 @@ public abstract class Projectile {
     private final StopWatch life;
     private final Enemy targetEnemy;
     private boolean damageApplied;
+    private Map map;
 
     public Projectile(int x, int y, int speed, MapPoint target, int damage, int life) {
         this.movementComponent = new MovementComponent(x, y, speed, target);
@@ -25,29 +29,21 @@ public abstract class Projectile {
         this.targetEnemy = targetEnemy;
     }
 
+    public void setMap(Map map) {
+        this.map = map;
+        updateGraphics();
+    }
+
     public void update() {
         if (targetEnemy != null && targetEnemy.isAlive()) {
             movementComponent.setTarget(targetEnemy.getPosition());
-        }
-
-        MapPoint target = movementComponent.getTarget();
-        double dx = target.getX() - movementComponent.getX();
-        double dy = target.getY() - movementComponent.getY();
-        double distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance <= movementComponent.getSpeed() || distance == 0) {
-            movementComponent.setX(target.getX());
-            movementComponent.setY(target.getY());
-        } else {
-            double ratio = movementComponent.getSpeed() / distance;
-            movementComponent.setX(movementComponent.getX() + dx * ratio);
-            movementComponent.setY(movementComponent.getY() + dy * ratio);
         }
 
         if (targetEnemy != null && targetEnemy.isAlive() && reachedTarget() && !damageApplied) {
             targetEnemy.receiveDamage(damage);
             damageApplied = true;
         }
+        updateGraphics();
     }
 
     public boolean checkLife() {
@@ -81,5 +77,21 @@ public abstract class Projectile {
 
     public MapPoint getTarget() {
         return movementComponent.getTarget();
+    }
+
+    public MovementComponent getMovementComponent() {
+        return movementComponent;
+    }
+
+    public abstract GraphicsEntety getGraphics();
+
+    public void updateGraphics() {
+        if (map == null) return;
+        GraphicsEntety graphics = getGraphics();
+        if (graphics == null) return;
+
+        double relX = (movementComponent.getX() * 100.0) / map.getMapWith();
+        double relY = (movementComponent.getY() * 100.0) / map.getMapHight();
+        graphics.setPosition(relX, relY);
     }
 }

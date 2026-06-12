@@ -11,11 +11,20 @@ import java.util.List;
 
 public class MenuPanel extends JPanel {
 
+
+
     private final JLabel titleLabel;
     private final JLabel subtitleLabel;
+
     private final JLabel levelLabel;
     private final JComboBox<LevelCatalog.LevelEntry> levelSelector;
     private final JPanel levelSelectionPanel;
+
+    // Nieuwe UI-componenten voor de moeilijkheidsgraad
+    private final JLabel difficultyLabel;
+    private final JComboBox<Difficulty> difficultySelector;
+    private final JPanel difficultySelectionPanel;
+
     private final JButton primaryButton;
     private final JButton secondaryButton;
     private final JButton quitButton;
@@ -46,6 +55,7 @@ public class MenuPanel extends JPanel {
         subtitleLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         subtitleLabel.setForeground(new Color(176, 186, 204));
 
+        // --- LEVEL SELECTION PANEL ---
         levelLabel = new JLabel("Select a level");
         levelLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         levelLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -68,6 +78,31 @@ public class MenuPanel extends JPanel {
         levelSelectionPanel.add(Box.createVerticalStrut(6));
         levelSelectionPanel.add(levelSelector);
 
+        // --- DIFFICULTY SELECTION PANEL ---
+        difficultyLabel = new JLabel("Select Difficulty");
+        difficultyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        difficultyLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        difficultyLabel.setForeground(new Color(176, 186, 204));
+
+        difficultySelector = new JComboBox<>(Difficulty.values()); // Vul de combobox met Easy, Normal, Hard
+        difficultySelector.setSelectedItem(Difficulty.NORMAL);     // Standaard op Normal zetten
+        difficultySelector.setAlignmentX(Component.CENTER_ALIGNMENT);
+        difficultySelector.setMaximumSize(new Dimension(220, 32));
+        difficultySelector.setPreferredSize(new Dimension(220, 32));
+        difficultySelector.setFocusable(false);
+        difficultySelector.setBackground(new Color(34, 40, 54));
+        difficultySelector.setForeground(Color.WHITE);
+        difficultySelector.setOpaque(true);
+
+        difficultySelectionPanel = new JPanel();
+        difficultySelectionPanel.setOpaque(false);
+        difficultySelectionPanel.setLayout(new BoxLayout(difficultySelectionPanel, BoxLayout.Y_AXIS));
+        difficultySelectionPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        difficultySelectionPanel.add(difficultyLabel);
+        difficultySelectionPanel.add(Box.createVerticalStrut(6));
+        difficultySelectionPanel.add(difficultySelector);
+
+        // --- BUTTONS ---
         primaryButton = createButton("Start Game");
         primaryButton.addActionListener(e -> primaryAction.run());
 
@@ -79,11 +114,14 @@ public class MenuPanel extends JPanel {
 
         installKeyBindings();
 
+        // UI-elementen toevoegen aan de card (Inclusief de nieuwe panel)
         card.add(titleLabel);
         card.add(Box.createVerticalStrut(10));
         card.add(subtitleLabel);
         card.add(Box.createVerticalStrut(24));
         card.add(levelSelectionPanel);
+        card.add(Box.createVerticalStrut(12)); // Ruimte tussen level en difficulty
+        card.add(difficultySelectionPanel);
         card.add(Box.createVerticalStrut(20));
         card.add(primaryButton);
         card.add(Box.createVerticalStrut(12));
@@ -139,6 +177,11 @@ public class MenuPanel extends JPanel {
         return selectedLevel != null ? selectedLevel.getResourcePath() : null;
     }
 
+    // Getter om de gekozen moeilijkheidsgraad op te vragen in je game-loop
+    public Difficulty getSelectedDifficulty() {
+        return (Difficulty) difficultySelector.getSelectedItem();
+    }
+
     public void showStartScreen() {
         startScreenVisible = true;
         titleLabel.setText("Tower Rush");
@@ -146,6 +189,7 @@ public class MenuPanel extends JPanel {
         primaryButton.setText("Start Game");
         secondaryButton.setVisible(false);
         levelSelectionPanel.setVisible(true);
+        difficultySelectionPanel.setVisible(true); // Tonen op het startscherm
         updateStartScreenState();
         revalidate();
         repaint();
@@ -159,6 +203,7 @@ public class MenuPanel extends JPanel {
         secondaryButton.setText("Main Menu");
         secondaryButton.setVisible(true);
         levelSelectionPanel.setVisible(false);
+        difficultySelectionPanel.setVisible(false);
         primaryButton.setEnabled(true);
         revalidate();
         repaint();
@@ -171,6 +216,7 @@ public class MenuPanel extends JPanel {
 
         boolean hasLevels = levelSelector.getItemCount() > 0;
         levelSelector.setEnabled(hasLevels);
+        difficultySelector.setEnabled(hasLevels);
         primaryButton.setEnabled(hasLevels);
         subtitleLabel.setText(hasLevels
                 ? "Choose a level and press start."

@@ -1,28 +1,29 @@
 package gameLogic.src;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 public class MovementUpdater {
 
-    public void UpdatePosition( MovementComponent[] movementComponents){
+    public void updatePosition(List<MovementComponent> movementComponents) {
+        if (movementComponents == null) return;
 
-        Stream.of(movementComponents).forEach(
-                mc -> {
-                   double distance = mc.getTarget().distance(new MapPoint(mc.getX(), mc.getY()));
-                   if (mc.getSpeed() < distance) {
-                       double dx = mc.getTarget().getX() - mc.getX();
-                       double dy = mc.getTarget().getY() - mc.getY();
-                       double angle = Math.atan2(dy, dx);
-                       mc.setX(mc.getX() + mc.getSpeed() * Math.cos(angle));
-                       mc.setY(mc.getY() + mc.getSpeed() * Math.sin(angle));
-                   }else {
-                       mc.setX(mc.getTarget().getX());
-                       mc.setY(mc.getTarget().getY());
-                   }
+        synchronized (movementComponents) {
+            for (MovementComponent mc : movementComponents) {
+                double targetX = mc.getTarget().getX();
+                double targetY = mc.getTarget().getY();
+                double dx = targetX - mc.getX();
+                double dy = targetY - mc.getY();
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= mc.getSpeed() || distance == 0) {
+                    mc.setX(targetX);
+                    mc.setY(targetY);
+                } else {
+                    double ratio = mc.getSpeed() / distance;
+                    mc.setX(mc.getX() + dx * ratio);
+                    mc.setY(mc.getY() + dy * ratio);
                 }
-        );
-
+            }
+        }
     }
-
 }
-

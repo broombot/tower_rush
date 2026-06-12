@@ -4,6 +4,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.List;
 import gameLogic.src.*;
+import gameLogic.src.projectiles.Projectile;
+import gameLogic.src.towers.ArcherTower;
+import gameLogic.src.towers.Cannon;
+import gameLogic.src.towers.Tower;
+import graphics.src.towers.ArcherTowerGraphics;
+import graphics.src.waveFactories.*;
 
 public class VisualLoop implements KeyListener {
 
@@ -13,6 +19,13 @@ public class VisualLoop implements KeyListener {
     private List<Projectile> projectiles ;
     private List<Tower> towers ;
     private List<MovementComponent> movementComponents;
+    private WaveFactory waveFactory;
+    private int waveCounter = 0;
+    private GameLogicLoop gameLogicLoop;
+
+    public void setGameLogicLoop(GameLogicLoop loop) {
+        this.gameLogicLoop = loop;
+    }
 
     public Map getLoadedMap() {
         return loadedMap;
@@ -31,6 +44,8 @@ public class VisualLoop implements KeyListener {
     private volatile boolean isPaused  = false;
     private volatile boolean hasStarted = false;
     private TowerFactory towerFactory;
+    private int lives;
+    private int money;
 
     public VisualLoop(GraphicsEngine engine,
                       List<Enemy> enemies,
@@ -74,6 +89,31 @@ public class VisualLoop implements KeyListener {
 
         graphicsEngine.setInMenu(isInMenu);
         graphicsEngine.setTowerPlacerActive(!isInMenu && !isPaused);
+        
+        if (!isInMenu && !isPaused) {
+            synchronized (enemies) {
+                if (enemies.isEmpty()) {
+                    spawnNextWave();
+                }
+            }
+        }
+    }
+
+    private void spawnNextWave() {
+        if (waveFactory == null || loadedMap == null) return;
+        
+        waveCounter++;
+        System.out.println("Spawning wave " + waveCounter);
+        Enemy[] newEnemies = waveFactory.generateWave(waveCounter);
+        
+        for (Enemy e : newEnemies) {
+            e.setMap(loadedMap);
+            enemies.add(e);
+            synchronized (movementComponents) {
+                movementComponents.add(e.getMovementComponent());
+            }
+            graphicsEngine.addEntety(e.getGraphics());
+        }
     }
 
     private void handlePrimaryMenuAction() {
@@ -98,6 +138,17 @@ public class VisualLoop implements KeyListener {
 
         resetWorldState();
         loadedMap = candidateMap;
+        if (gameLogicLoop != null) gameLogicLoop.setMap(loadedMap);
+
+        // Select WaveFactory based on difficulty
+        Difficulty selectedDifficulty = graphicsEngine.getSelectedDifficulty();
+        if (candidateMap.getPaths().length > 0) {
+            waveFactory = WaveFactorySelector.getWaveFactory(selectedDifficulty, candidateMap.getPaths()[0]);
+            System.out.println("WaveFactory selected for difficulty: " + selectedDifficulty);
+        }
+
+        money = 400;
+        lives = 200;
         graphicsEngine.addMap(loadedMap);
         hasStarted = true;
         isInMenu = false;
@@ -132,12 +183,22 @@ public class VisualLoop implements KeyListener {
     }
 
     private void resetWorldState() {
-        loadedMap = null;
-        enemies.clear();
-        projectiles.clear();
-        towers.clear();
-        movementComponents.clear();
-        graphicsEngine.clearGameEntities();
+        synchronized (enemies) {
+            synchronized (projectiles) {
+                synchronized (towers) {
+                    synchronized (movementComponents) {
+                        loadedMap = null;
+                        enemies.clear();
+                        projectiles.clear();
+                        towers.clear();
+                        movementComponents.clear();
+                        graphicsEngine.clearGameEntities();
+                        waveCounter = 0;
+                        if (gameLogicLoop != null) gameLogicLoop.setMap(null);
+                    }
+                }
+            }
+        }
     }
 
     private void quitGame() {
@@ -145,67 +206,47 @@ public class VisualLoop implements KeyListener {
         System.exit(0);
     }
 
-    /**
-     * Called by TowerPlacer (via GraphicsEngine) when the player clicks a
-     * PLACEABLE tile.
-     *
-     * @param tileCol  column index in the map grid
-     * @param tileRow  row index in the map grid
-     * @param pixelX   top-left x of the tile in panel coordinates
-     * @param pixelY   top-left y of the tile in panel coordinates
-     */
-    private void onTowerPlaced(int tileCol, int tileRow, int pixelX, int pixelY,Towers tower) {
-        System.out.printf("Tower placed at map tile (%d, %d) - pixel (%d, %d)%n",
-                tileCol, tileRow, pixelX, pixelY);
+    private void onTowerPlaced(int tileCol, int tileRow, int pixelX, int pixelY,Towers towerType) {
+        System.out.printf("Tower placed at map tile (%d, %d)%n", tileCol, tileRow);
 
-        Tower createdTower = null;
-        switch (tower){
+        switch (towerType){
             case Archer:
-                createdTower = towerFactory.createArcherTower(
-                        tileCol,
-                        tileRow,
-                        pixelX,
-                        pixelY);
-                        graphicsEngine.addEntety(createdTower.getGraphics());
+                if (money > ArcherTower.getPrice()) {
+                    synchronized (towers) {
+                        towers.add(towerFactory.createArcherTower(
+                                tileCol,
+                                tileRow,
+                                pixelX,
+                                pixelY));
+                    }
+                }
                 break;
+
             case Cannon:
-                createdTower = towerFactory.createCannonTower(
-                        tileCol,
-                        tileRow,
-                        pixelX,
-                        pixelY);
-                        graphicsEngine.addEntety(createdTower.getGraphics());
+                if (money > Cannon.getPrice()){
+                    synchronized (towers) {
+                        towers.add(towerFactory.createCannonTower(
+                                tileCol,
+                                tileRow,
+                                pixelX,
+                                pixelY));}
+                    }
                 break;
             default:
                 break;
         }
 
-        if (createdTower != null) {
-            towers.add(createdTower);
-        }
 
     }
 
-
-    /**
-     * @param e the event to be processed
-     */
     @Override
     public void keyTyped(KeyEvent e) {
-
     }
 
-    /**
-     * @param e the event to be processed
-     */
     @Override
     public void keyPressed(KeyEvent e) {
-
     }
 
-    /**
-     * @param e the event to be processed
-     */
     @Override
     public void keyReleased(KeyEvent e) {
         if (!hasStarted) {
@@ -223,3 +264,4 @@ public class VisualLoop implements KeyListener {
         }
     }
 }
+

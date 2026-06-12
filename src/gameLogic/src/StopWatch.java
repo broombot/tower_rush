@@ -13,7 +13,8 @@ public class StopWatch {
         return System.currentTimeMillis() - beginTime;
     }
 
-    boolean isFinished(){
-        return System.currentTimeMillis() >= beginTime + duration; }
+    public long timeLeft(){return duration - getTime();}
+
+    public boolean isFinished(){ return System.currentTimeMillis() >= beginTime + duration; }
 
 }

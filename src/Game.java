@@ -1,6 +1,9 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import gameLogic.src.*;
+import gameLogic.src.projectiles.Projectile;
+import gameLogic.src.towers.Tower;
 import graphics.src.*;
 
 public final class Game {
@@ -8,14 +11,11 @@ public final class Game {
     private static Game instance;
     private GameLogicLoop gameLogicLoop;
     private VisualLoop visualLoop;
-    private List<MovementComponent> movementComponents =  new ArrayList<MovementComponent>();
-    private List<Tower> towers = new ArrayList<Tower>();
-    private List<Enemy> enemies = new ArrayList<Enemy>();
-    private List<Projectile> projectiles = new ArrayList<Projectile>();
+    private final List<MovementComponent> movementComponents = Collections.synchronizedList(new ArrayList<MovementComponent>());
+    private final List<Tower> towers = Collections.synchronizedList(new ArrayList<Tower>());
+    private final List<Enemy> enemies = Collections.synchronizedList(new ArrayList<Enemy>());
+    private final List<Projectile> projectiles = Collections.synchronizedList(new ArrayList<Projectile>());
     private boolean close = false;
-
-
-
 
     private Game() {
     }
@@ -28,10 +28,11 @@ public final class Game {
         return instance;
     }
 
-
     public void run(){
-        visualLoop = new VisualLoop(new GraphicsEngine(),enemies,projectiles,towers,movementComponents);
-        gameLogicLoop = new GameLogicLoop(enemies,towers,movementComponents,projectiles);
+        GraphicsEngine graphicsEngine = new GraphicsEngine();
+        visualLoop = new VisualLoop(graphicsEngine,enemies,projectiles,towers,movementComponents);
+        gameLogicLoop = new GameLogicLoop(enemies,towers,movementComponents,projectiles, graphicsEngine);
+        visualLoop.setGameLogicLoop(gameLogicLoop);
         gameLogicLoop.start();
 
         while (!close) {
@@ -48,14 +49,8 @@ public final class Game {
                 Thread.currentThread().interrupt();
                 break;
             }
-
         }
 
         gameLogicLoop.shutdown();
-
     };
-
-
-
-
 }

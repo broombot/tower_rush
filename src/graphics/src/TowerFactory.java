@@ -1,6 +1,6 @@
 package graphics.src;
 
-import gameLogic.src.ArcherTower;
+import gameLogic.src.towers.ArcherTower;
 import graphics.src.towers.GraphicsCannon;
 
 /**

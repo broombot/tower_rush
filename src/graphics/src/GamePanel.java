@@ -1,6 +1,7 @@
 package graphics.src;
 
 import gameLogic.src.Map;
+import gameLogic.src.TileType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,12 +9,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-
 
 public class GamePanel extends JPanel {
-
-
 
     private final int originalTileSize = 16;
     private double scale = 2;
@@ -24,21 +21,12 @@ public class GamePanel extends JPanel {
     private final int screenRow = 25;
     private int screenWidth = tileSize * screenCol;
     private int screenHeight = tileSize * screenRow;
-    private List<GraphicsEntety> enties =  new ArrayList<GraphicsEntety>();
+    private List<GraphicsEntety> enties = new ArrayList<GraphicsEntety>();
 
     private Color placebleColor;
     private Color pathColor;
     private Color projectileBlockingColor;
     private Color blockedColor;
-
-
-    /**
-     * @param blockedColor
-     * @param projectileBlockingColor
-     * @param pathColor
-     * @param placebleColor
-     * @param scale
-     */
 
     public GamePanel(Color blockedColor, Color projectileBlockingColor, Color pathColor, Color placebleColor, double scale) {
         this.blockedColor = blockedColor;
@@ -50,37 +38,29 @@ public class GamePanel extends JPanel {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                updateEntityBounds();
+                updateAllEntityBounds();
                 repaint();
             }
         });
         reScale();
     }
 
-
-
     public void reScale(){
         tileSize = (int)(originalTileSize * scale);
         screenWidth = tileSize * screenCol;
         screenHeight = tileSize * screenRow;
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        updateEntityBounds();
-        enties.stream().forEach(ent -> {ent.setBounds((int) Math.round(screenWidth * ent.getRelativex()/100),
-                (int) Math.round( screenHeight * ent.getRelativey()/100),ent.getEntetySize(),ent.getEntetySize());});
+        updateAllEntityBounds();
     };
-
 
     public void setMap(Map map){
         this.map = map;
     }
 
-
-    /**
-     * @param entety
-     */
     public void addEntety(GraphicsEntety entety){
-        enties.add(entety);
-        storeRelativePosition(entety);
+        synchronized (enties) {
+            enties.add(entety);
+        }
         updateEntityBounds(entety);
         this.add(entety);
         this.revalidate();
@@ -89,33 +69,26 @@ public class GamePanel extends JPanel {
 
     public void clearEnteties() {
         this.removeAll();
-        enties.clear();
+        synchronized (enties) {
+            enties.clear();
+        }
         this.revalidate();
         this.repaint();
     }
 
-    private void storeRelativePosition(GraphicsEntety entety) {
-        int referenceWidth = getReferenceWidth();
-        int referenceHeight = getReferenceHeight();
-
-        if (referenceWidth <= 0 || referenceHeight <= 0) {
-            return;
-        }
-
-        double relativeX = entety.getRelativex() * 100.0 / referenceWidth;
-        double relativeY = entety.getRelativey() * 100.0 / referenceHeight;
-        entety.setPosition(relativeX, relativeY);
-    }
-
-    private void updateEntityBounds() {
-        for (GraphicsEntety entety : enties) {
-            updateEntityBounds(entety);
+    public void updateAllEntityBounds() {
+        synchronized (enties) {
+            for (GraphicsEntety entety : enties) {
+                updateEntityBounds(entety);
+            }
         }
     }
 
-    private void updateEntityBounds(GraphicsEntety entety) {
-        int referenceWidth = getReferenceWidth();
-        int referenceHeight = getReferenceHeight();
+    public void updateEntityBounds(GraphicsEntety entety) {
+        int referenceWidth = getWidth();
+        if (referenceWidth <= 0) referenceWidth = getPreferredSize().width;
+        int referenceHeight = getHeight();
+        if (referenceHeight <= 0) referenceHeight = getPreferredSize().height;
 
         if (referenceWidth <= 0 || referenceHeight <= 0) {
             return;
@@ -126,87 +99,61 @@ public class GamePanel extends JPanel {
         entety.setBounds(x, y, entety.getEntetySize(), entety.getEntetySize());
     }
 
-    private int getReferenceWidth() {
-        int currentWidth = getWidth();
-        if (currentWidth > 0) {
-            return currentWidth;
-        }
-
-        if (getPreferredSize() != null) {
-            return getPreferredSize().width;
-        } else {
-            return screenWidth;
-        }
-    }
-
-    private int getReferenceHeight() {
-        int currentHeight = getHeight();
-        if (currentHeight > 0) {
-            return currentHeight;
-        }
-        if (getPreferredSize() != null) {
-            return getPreferredSize().height;
-        } else {
-            return screenHeight;
-        }
-    }
-
+    @Override
     public void paintComponent(Graphics g ){
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-
-
         if(map != null){
+            int mapW = map.getMapWith();
+            int mapH = map.getMapHight();
+            int tileWith = (int) Math.ceil((double) getWidth() / mapW);
+            int tileHight = (int) Math.ceil((double) getHeight() / mapH);
 
-            int tileWith = (int) Math.ceil((double) getWidth() / map.getMapWith());
-            int tileHight = (int) Math.ceil((double) getHeight() / map.getMapHight());
-
-
-            for (int i = 0; i < map.getMapHight() ; i++) {
-                for (int j = 0; j < map.getMapWith() ; j++) {
-
-                    switch (map.getMap()[i][j]){
-                        case PLACEABLE:
-                            g2.setColor(placebleColor);
-                            break;
-                        case PATH1:case PATH2:case PATH3:case INTERSECTION:
-                            g2.setColor(pathColor);
-                            break;
-                        case PROJECTILE_BLOCKING:
-                            g2.setColor(projectileBlockingColor);
-                            break;
-                        case BLOCKED:
-                            g2.setColor(blockedColor);
-                            break;
-                        case null, default:
-                            g2.setColor(Color.RED);
+            for (int i = 0; i < mapH ; i++) {
+                for (int j = 0; j < mapW ; j++) {
+                    TileType type = map.getMap()[i][j];
+                    if (type == null) {
+                        g2.setColor(Color.RED);
+                    } else {
+                        switch (type){
+                            case PLACEABLE:
+                                g2.setColor(placebleColor);
+                                break;
+                            case PATH1:case PATH2:case PATH3:case INTERSECTION:
+                                g2.setColor(pathColor);
+                                break;
+                            case PROJECTILE_BLOCKING:
+                                g2.setColor(projectileBlockingColor);
+                                break;
+                            case BLOCKED:
+                                g2.setColor(blockedColor);
+                                break;
+                            default:
+                                g2.setColor(Color.RED);
+                        }
                     }
                     g2.fillRect(j * tileWith, i * tileHight, tileWith, tileHight);
-
                 }
             }
-        }else{
-            System.out.println("no map found");
         }
-
     }
 
     public void removeEntety(GraphicsEntety entety){
         this.remove(entety);
-        enties.remove(entety);
+        synchronized (enties) {
+            enties.remove(entety);
+        }
         this.revalidate();
     }
 
     public int getScreenWidth() {
-        return getReferenceWidth();
+        return getWidth() > 0 ? getWidth() : screenWidth;
     }
-
 
     public int getScreenHeight() {
-        return getReferenceHeight();
+        return getHeight() > 0 ? getHeight() : screenHeight;
     }
-
 
     public int getOriginalTileSize() {
         return originalTileSize;
@@ -224,6 +171,4 @@ public class GamePanel extends JPanel {
     public int getTileSize() {
         return tileSize;
     }
-
-
 }

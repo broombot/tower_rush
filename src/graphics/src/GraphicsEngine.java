@@ -55,6 +55,7 @@ public class GraphicsEngine implements Runnable {
 
     private void draw(){
         if (!inMenu){
+            gamePanel.updateAllEntityBounds();
             gamePanel.repaint();
         }else{
             menuPanel.repaint();
@@ -116,6 +117,10 @@ public class GraphicsEngine implements Runnable {
 
     public String getSelectedLevelResource() {
         return menuPanel.getSelectedLevelResource();
+    }
+
+    public Difficulty getSelectedDifficulty() {
+        return menuPanel.getSelectedDifficulty();
     }
 
     public void showStartScreen() {
