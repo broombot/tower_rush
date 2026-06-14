@@ -19,8 +19,7 @@ public class ArcherTowerGraphics extends ArcherTower {
 
     @Override
     public Projectile attack(Enemy target) {
-        Projectile p = new ArrowGraphics(position.getX(), position.getY(), target);
-        if (map != null) p.setMap(map);
+        Projectile p = new ArrowGraphics(position.getX(), position.getY(), target,getDamage());
         return p;
     }
 

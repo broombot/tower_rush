@@ -29,7 +29,7 @@ public class TowerPlacer {
     private boolean active = false;
     private final List<TowerPlacedListener> listeners = new ArrayList<>();
 
-    // Tracks which tiles already have a tower so we don't double-place.
+    // Tracks which tiles already have a tower so we don"t double-place.
     private Towers[][] occupied;
 
     public TowerPlacer(GamePanel gamePanel) {
@@ -45,6 +45,15 @@ public class TowerPlacer {
     /** Supply (or update) the map that is currently loaded. */
     public void setMap(Map map) {
         this.map = map;
+        if (map != null) {
+            resetOccupied();
+        } else {
+            this.occupied = null;
+        }
+    }
+
+    public void resetOccupied() {
+        if (map == null) return;
         this.occupied = new Towers[map.getMapHight()][map.getMapWith()];
         for (int row = 0; row < occupied.length; row++) {
             for (int col = 0; col < occupied[row].length; col++) {
@@ -69,7 +78,7 @@ public class TowerPlacer {
 
 
     private void handleClick(int pixelX, int pixelY) {
-        if (map == null) return;
+        if (map == null || occupied == null) return;
 
         int panelWidth  = gamePanel.getWidth();
         int panelHeight = gamePanel.getHeight();
@@ -105,7 +114,7 @@ public class TowerPlacer {
 
         JMenuItem placeArcher = new JMenuItem("Place archer");
         placeArcher.addActionListener(e -> {
-            if (occupied[tileRow][tileCol].ocupide()) return;
+            if (occupied == null || occupied[tileRow][tileCol].ocupide()) return;
             occupied[tileRow][tileCol] = Towers.Archer;
 
             for (TowerPlacedListener listener : listeners) {
@@ -115,7 +124,7 @@ public class TowerPlacer {
 
         JMenuItem placeCanon = new JMenuItem("Place Cannon");
         placeCanon.addActionListener(e -> {
-            if (occupied[tileRow][tileCol].ocupide()) return;
+            if (occupied == null || occupied[tileRow][tileCol].ocupide()) return;
             occupied[tileRow][tileCol] = Towers.Cannon;
 
             for (TowerPlacedListener listener : listeners) {

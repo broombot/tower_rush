@@ -3,12 +3,12 @@ package gameLogic.src.projectiles;
 import gameLogic.src.Enemy;
 import gameLogic.src.MapPoint;
 
-public abstract class Arrow extends Projectile {
-    public Arrow(int x, int y, MapPoint target) {
-        super(x, y, 10, target, 50, 1000);
+public class Arrow extends Projectile {
+    public Arrow(double x, double y, MapPoint target, int damage) {
+        super(x, y, 1.2, target, damage, 1000);
     }
 
-    public Arrow(int x, int y, Enemy targetEnemy) {
-        super(x, y, 10, targetEnemy, 50, 1000);
+    public Arrow(double x, double y, Enemy targetEnemy, int damage) {
+        super(x, y, 1.2, targetEnemy, damage, 1000);
     }
 }

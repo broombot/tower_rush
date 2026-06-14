@@ -21,12 +21,15 @@ public class GamePanel extends JPanel {
     private final int screenRow = 25;
     private int screenWidth = tileSize * screenCol;
     private int screenHeight = tileSize * screenRow;
-    private List<GraphicsEntety> enties = new ArrayList<GraphicsEntety>();
+    private final List<GraphicsEntety> enties = new ArrayList<>();
+    private final List<EntityVisual> visuals = new ArrayList<>();
 
     private Color placebleColor;
     private Color pathColor;
     private Color projectileBlockingColor;
     private Color blockedColor;
+
+    private JLabel statsLabel;
 
     public GamePanel(Color blockedColor, Color projectileBlockingColor, Color pathColor, Color placebleColor, double scale) {
         this.blockedColor = blockedColor;
@@ -35,6 +38,15 @@ public class GamePanel extends JPanel {
         this.placebleColor = placebleColor;
         this.scale = scale;
         setLayout(null);
+        
+        statsLabel = new JLabel("Lives: 0 | Money: 0");
+        statsLabel.setForeground(Color.WHITE);
+        statsLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        statsLabel.setOpaque(true);
+        statsLabel.setBackground(new Color(0, 0, 0, 150));
+        statsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(statsLabel);
+
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -45,43 +57,77 @@ public class GamePanel extends JPanel {
         reScale();
     }
 
+    public void setStats(int lives, int money) {
+        SwingUtilities.invokeLater(() -> {
+            statsLabel.setText("Lives: " + lives + " | Money: " + money);
+            updateHUDPosition();
+        });
+    }
+
+    private void updateHUDPosition() {
+        statsLabel.setBounds(10, 10, 250, 30);
+    }
+
     public void reScale(){
         tileSize = (int)(originalTileSize * scale);
         screenWidth = tileSize * screenCol;
         screenHeight = tileSize * screenRow;
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         updateAllEntityBounds();
-    };
+        updateHUDPosition();
+    }
 
     public void setMap(Map map){
         this.map = map;
     }
 
-    public void addEntety(GraphicsEntety entety){
+    public void addVisual(EntityVisual visual) {
+        synchronized (visuals) {
+            visuals.add(visual);
+        }
+        addEntety(visual.getGraphicsEntety());
+    }
+
+    public void removeVisual(EntityVisual visual) {
+        synchronized (visuals) {
+            visuals.remove(visual);
+        }
+        removeEntety(visual.getGraphicsEntety());
+    }
+
+    private void addEntety(GraphicsEntety entety){
         synchronized (enties) {
             enties.add(entety);
         }
         updateEntityBounds(entety);
         this.add(entety);
-        this.revalidate();
-        this.repaint();
     }
 
     public void clearEnteties() {
         this.removeAll();
+        add(statsLabel); // Keep HUD
         synchronized (enties) {
             enties.clear();
+        }
+        synchronized (visuals) {
+            visuals.clear();
         }
         this.revalidate();
         this.repaint();
     }
 
     public void updateAllEntityBounds() {
+        synchronized (visuals) {
+            for (EntityVisual visual : visuals) {
+                visual.update(map);
+            }
+        }
         synchronized (enties) {
             for (GraphicsEntety entety : enties) {
                 updateEntityBounds(entety);
             }
         }
+        updateHUDPosition();
     }
 
     public void updateEntityBounds(GraphicsEntety entety) {
@@ -139,7 +185,7 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void removeEntety(GraphicsEntety entety){
+    private void removeEntety(GraphicsEntety entety){
         this.remove(entety);
         synchronized (enties) {
             enties.remove(entety);

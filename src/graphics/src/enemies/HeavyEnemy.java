@@ -2,28 +2,11 @@ package graphics.src.enemies;
 
 import gameLogic.src.Enemy;
 import gameLogic.src.Path;
-import graphics.src.GraphicsEntety;
-
-import java.awt.*;
 
 public class HeavyEnemy extends Enemy {
-    private GraphicsEntety graphics;
 
     public HeavyEnemy(Path path, float difficultyScale ) {
-        // Heavy enemy speed 0.05 tiles per frame
-        super(0.05 * difficultyScale, path, Math.round(200 * difficultyScale), Math.round( 5 * difficultyScale));
-        graphics = new GraphicsEntety(path.getPositionCord(0).getX(),path.getPositionCord(0).getY(),
-                new Color(60, 25, 25), 20);
-    }
-
-    @Override
-    public GraphicsEntety getGraphics() {
-        return graphics;
-    }
-
-    @Override
-    public void updateGraphics(){
-        super.updateGraphics();
+        // Speed 0.04, HP 400
+        super(0.04 * difficultyScale, path, Math.round(400 * difficultyScale), Math.round( 15 * difficultyScale), 50);
     }
 }
-

@@ -1,24 +1,21 @@
 package gameLogic.src.projectiles;
 
 import gameLogic.src.*;
-import graphics.src.GraphicsEntety;
 
-public abstract class Projectile {
+public abstract class Projectile implements GameObject {
     private final MovementComponent movementComponent;
     private final int damage;
     private final StopWatch life;
     private final Enemy targetEnemy;
-    private boolean damageApplied;
-    private Map map;
 
-    public Projectile(int x, int y, int speed, MapPoint target, int damage, int life) {
+    public Projectile(double x, double y, double speed, MapPoint target, int damage, int life) {
         this.movementComponent = new MovementComponent(x, y, speed, target);
         this.damage = damage;
         this.life = new StopWatch(life);
         this.targetEnemy = null;
     }
 
-    public Projectile(int x, int y, int speed, Enemy targetEnemy, int damage, int life) {
+    public Projectile(double x, double y, double speed, Enemy targetEnemy, int damage, int life) {
         this.movementComponent = new MovementComponent(
                 x,
                 y,
@@ -29,21 +26,10 @@ public abstract class Projectile {
         this.targetEnemy = targetEnemy;
     }
 
-    public void setMap(Map map) {
-        this.map = map;
-        updateGraphics();
-    }
-
     public void update() {
         if (targetEnemy != null && targetEnemy.isAlive()) {
             movementComponent.setTarget(targetEnemy.getPosition());
         }
-
-        if (targetEnemy != null && targetEnemy.isAlive() && reachedTarget() && !damageApplied) {
-            targetEnemy.receiveDamage(damage);
-            damageApplied = true;
-        }
-        updateGraphics();
     }
 
     public boolean checkLife() {
@@ -51,8 +37,9 @@ public abstract class Projectile {
     }
 
     public boolean reachedTarget() {
-        return movementComponent.getX() == movementComponent.getTarget().getX()
-                && movementComponent.getY() == movementComponent.getTarget().getY();
+        double dx = movementComponent.getX() - movementComponent.getTarget().getX();
+        double dy = movementComponent.getY() - movementComponent.getTarget().getY();
+        return Math.sqrt(dx * dx + dy * dy) < 0.3;
     }
 
     public boolean isExpired() {
@@ -60,8 +47,8 @@ public abstract class Projectile {
             return true;
         }
 
-        if (targetEnemy != null) {
-            return damageApplied || !targetEnemy.isAlive();
+        if (targetEnemy != null && !targetEnemy.isAlive()) {
+            return true;
         }
 
         return reachedTarget();
@@ -71,6 +58,7 @@ public abstract class Projectile {
         return damage;
     }
 
+    @Override
     public MapPoint getPosition() {
         return new MapPoint(movementComponent.getX(), movementComponent.getY());
     }
@@ -81,17 +69,5 @@ public abstract class Projectile {
 
     public MovementComponent getMovementComponent() {
         return movementComponent;
-    }
-
-    public abstract GraphicsEntety getGraphics();
-
-    public void updateGraphics() {
-        if (map == null) return;
-        GraphicsEntety graphics = getGraphics();
-        if (graphics == null) return;
-
-        double relX = (movementComponent.getX() * 100.0) / map.getMapWith();
-        double relY = (movementComponent.getY() * 100.0) / map.getMapHight();
-        graphics.setPosition(relX, relY);
     }
 }

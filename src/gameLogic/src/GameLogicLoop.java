@@ -2,11 +2,12 @@ package gameLogic.src;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import gameLogic.src.projectiles.Projectile;
 import gameLogic.src.towers.Tower;
 import gameLogic.src.towers.TowerUpdater;
-import graphics.src.GraphicsEngine;
+
 
 public class GameLogicLoop extends Thread {
 
@@ -19,16 +20,24 @@ public class GameLogicLoop extends Thread {
     private final List<Projectile> projectiles;
     private final TowerUpdater towerUpdater = new TowerUpdater();
     private final MovementUpdater movementUpdater = new MovementUpdater();
-    private final GraphicsEngine graphicsEngine;
     private StopWatch logicTimer;
     private Map currentMap;
+    private Consumer<Integer> onEnemyKilled;
+    private Consumer<Integer> onEnemyReachedEnd;
 
-    public GameLogicLoop(List<Enemy> enemies, List<Tower> towers, List<MovementComponent> movementComponents, List<Projectile> projectiles, GraphicsEngine graphicsEngine) {
+    public GameLogicLoop(List<Enemy> enemies, List<Tower> towers, List<MovementComponent> movementComponents, List<Projectile> projectiles) {
         this.enemies = enemies;
         this.towers = towers;
         this.movementComponents = movementComponents;
         this.projectiles = projectiles;
-        this.graphicsEngine = graphicsEngine;
+    }
+
+    public void setOnEnemyKilled(Consumer<Integer> callback) {
+        this.onEnemyKilled = callback;
+    }
+
+    public void setOnEnemyReachedEnd(Consumer<Integer> callback) {
+        this.onEnemyReachedEnd = callback;
     }
 
     public void setMap(Map map) {
@@ -48,65 +57,14 @@ public class GameLogicLoop extends Thread {
 
     public void shutdown() {
         running = false;
-        interrupt();
-        resumeLoop();
-    }
-
-    private void colisionDetection(){
-        synchronized (enemies) {
-            synchronized (projectiles) {
-                List<Projectile> toRemove = new ArrayList<>();
-                for (Projectile projectile : projectiles) {
-                    for (Enemy enemy : enemies) {
-                        if (enemy.isAlive() && enemy.getPosition().distance(projectile.getPosition()) < 1) {
-                            enemy.receiveDamage(projectile.getDamage());
-                            toRemove.add(projectile);
-                            break;
-                        }
-                    }
-                }
-                
-                for (Projectile p : toRemove) {
-                    projectiles.remove(p);
-                    synchronized (movementComponents) {
-                        movementComponents.remove(p.getMovementComponent());
-                    }
-                    if (graphicsEngine != null) {
-                        graphicsEngine.removeEntety(p.getGraphics());
-                    }
-                }
-            }
-        }
-    }
-
-    private void updateProjectiles() {
-        synchronized (projectiles) {
-            List<Projectile> toRemove = new ArrayList<>();
-            for (Projectile projectile : projectiles) {
-                projectile.update();
-                if (projectile.isExpired()) {
-                    toRemove.add(projectile);
-                }
-            }
-            
-            for (Projectile p : toRemove) {
-                projectiles.remove(p);
-                synchronized (movementComponents) {
-                    movementComponents.remove(p.getMovementComponent());
-                }
-                if (graphicsEngine != null) {
-                    graphicsEngine.removeEntety(p.getGraphics());
-                }
-            }
-        }
+        resumeLoop(); // Wake up if paused
     }
 
     @Override
     public void run() {
-        while (running && !isInterrupted()) {
+        logicTimer = new StopWatch(32);
 
-            logicTimer = new StopWatch(50);
-
+        while (running) {
             synchronized (pauseLock) {
                 while (paused && running) {
                     try {
@@ -118,53 +76,103 @@ public class GameLogicLoop extends Thread {
                 }
             }
 
-            if (!running || isInterrupted()) {
-                return;
-            }
+            if (!running) break;
 
-            // 1. Update Enemies
-            synchronized (enemies) {
-                for (Enemy enemy : enemies) {
-                    if (enemy.isAlive()) {
-                        enemy.Update();
+            if (logicTimer.isFinished()) {
+                // 1. Update Projectiles Logic (Homing)
+                synchronized (projectiles) {
+                    for (Projectile projectile : projectiles) {
+                        projectile.update();
                     }
                 }
-                // Remove dead enemies
-                enemies.removeIf(enemy -> {
-                    boolean dead = !enemy.isAlive() || enemy.reachedEnd();
-                    if (dead) {
+
+                // 2. Update Projectile Collisions and Expiry
+                synchronized (projectiles) {
+                    List<Projectile> toRemove = new ArrayList<>();
+                    synchronized (enemies) {
+                        for (Projectile projectile : projectiles) {
+                            boolean hit = false;
+                            for (Enemy enemy : enemies) {
+                                if (enemy.isAlive() && enemy.getPosition().distance(projectile.getPosition()) < 0.5) {
+                                    enemy.receiveDamage(projectile.getDamage());
+                                    toRemove.add(projectile);
+                                    hit = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!hit) {
+                                // Check if expired (timer finished, target died, or reached destination)
+                                if (projectile.isExpired()) {
+                                    toRemove.add(projectile);
+                                } 
+                                // Check out of bounds
+                                else if (currentMap != null && (projectile.getPosition().getX() < 0 || projectile.getPosition().getX() > currentMap.getMapWith() ||
+                                         projectile.getPosition().getY() < 0 || projectile.getPosition().getY() > currentMap.getMapHight())) {
+                                    toRemove.add(projectile);
+                                }
+                            }
+                        }
+                    }
+                    for (Projectile p : toRemove) {
+                        projectiles.remove(p);
                         synchronized (movementComponents) {
-                            movementComponents.remove(enemy.getMovementComponent());
-                        }
-                        if (graphicsEngine != null) {
-                            graphicsEngine.removeEntety(enemy.getGraphics());
+                            movementComponents.remove(p.getMovementComponent());
                         }
                     }
-                    return dead;
-                });
-            }
-
-            // 2. Update Towers
-            synchronized (towers) {
-                towerUpdater.updateTowers(towers, enemies, projectiles, movementComponents, graphicsEngine);
-            }
-
-            // 3. Collision and Projectiles
-            colisionDetection();
-            updateProjectiles();
-
-            // 4. Movement
-            synchronized (movementComponents) {
-                movementUpdater.updatePosition(movementComponents);
-            }
-
-            if (!logicTimer.isFinished()) {
-                try {
-                    Thread.sleep(logicTimer.timeLeft());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
                 }
+
+                // 3. Update Towers
+                synchronized (towers) {
+                    synchronized (enemies) {
+                        synchronized (projectiles) {
+                            synchronized (movementComponents) {
+                                towerUpdater.updateTowers(towers, enemies, projectiles, movementComponents);
+                            }
+                        }
+                    }
+                }
+
+                // 4. Update Movements
+                synchronized (movementComponents) {
+                    movementUpdater.updatePosition(movementComponents);
+                }
+
+                // 5. Update Enemies and check for reached end
+                synchronized (enemies) {
+                    for (Enemy enemy : enemies) {
+                        if (enemy.isAlive()) {
+                            enemy.Update();
+                        }
+                    }
+                    // Remove dead enemies or those who reached end
+                    enemies.removeIf(enemy -> {
+                        boolean dead = !enemy.isAlive();
+                        boolean reachedEnd = enemy.reachedEnd();
+                        if (dead || reachedEnd) {
+                            if (dead && !reachedEnd && onEnemyKilled != null) {
+                                onEnemyKilled.accept(enemy.getReward());
+                            } else if (reachedEnd && onEnemyReachedEnd != null) {
+                                onEnemyReachedEnd.accept(enemy.getDamage());
+                            }
+                            
+                            synchronized (movementComponents) {
+                                movementComponents.remove(enemy.getMovementComponent());
+                            }
+
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+
+                logicTimer = new StopWatch(32);
+            }
+
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }

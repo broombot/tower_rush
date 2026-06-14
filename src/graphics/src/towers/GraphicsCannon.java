@@ -23,8 +23,7 @@ public class GraphicsCannon extends Cannon {
 
     @Override
     public Projectile attack(Enemy target) {
-        Projectile p = new CannonBallGraphics(position.getX(), position.getY(), target);
-        if (map != null) p.setMap(map);
+        Projectile p = new CannonBallGraphics(position.getX(), position.getY(), target,getDamage());
         return p;
     }
 }

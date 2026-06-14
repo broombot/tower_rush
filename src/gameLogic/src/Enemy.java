@@ -1,30 +1,27 @@
 package gameLogic.src;
 
-import graphics.src.GraphicsEntety;
-
-public abstract class Enemy {
+public abstract class Enemy implements GameObject {
     private MovementComponent movementComponent;
     private int health;
     private int damage;
+    private int reward;
     private Path path;
     private int pathPosition = 0;
-    private Map map;
 
-    public Enemy(double speed ,Path path , int health, int damage) {
+    public Enemy(double speed ,Path path , int health, int damage, int reward) {
         this.path = path;
-        // speed here is tiles per frame. 0.1 means 1 tile every 10 frames.
+        
+        // Add a tiny random offset to avoid exact overlap
+        double offset = (Math.random() - 0.5) * 0.2;
+        
         this.movementComponent = new MovementComponent(
-                path.getPositionCord(0).getX(),
-                path.getPositionCord(0).getY(),
+                path.getPositionCord(0).getX() + offset,
+                path.getPositionCord(0).getY() + offset,
                 speed,
                 path.getPositionCord(0));
         this.health = health;
         this.damage = damage;
-    }
-
-    public void setMap(Map map) {
-        this.map = map;
-        updateGraphics();
+        this.reward = reward;
     }
 
     public int getDamage() {
@@ -35,6 +32,11 @@ public abstract class Enemy {
         return health > 0;
     }
 
+    public int getReward() {
+        return reward;
+    }
+
+    @Override
     public MapPoint getPosition() {
         return new MapPoint(movementComponent.getX(), movementComponent.getY());
     }
@@ -49,38 +51,21 @@ public abstract class Enemy {
 
     public boolean reachedEnd(){
         return pathPosition >= path.getPath().length - 1;
-    };
+    }
 
     public void Update(){
         // Move to next path point if we are close enough to current target
-        if (movementComponent.getX() == movementComponent.getTarget().getX() && 
-            movementComponent.getY() == movementComponent.getTarget().getY()) {
+        double dx = movementComponent.getX() - movementComponent.getTarget().getX();
+        double dy = movementComponent.getY() - movementComponent.getTarget().getY();
+        double dist = Math.sqrt(dx*dx + dy*dy);
+
+        if (dist < 0.1) {
             pathPosition = Math.min(pathPosition + 1, path.getPath().length - 1);
             movementComponent.setTarget(path.getPath()[pathPosition]);
         }
-        updateGraphics();
     }
 
     public int getPathPosition() {
         return pathPosition;
-    }
-
-    public abstract GraphicsEntety getGraphics();
-
-    public void updateGraphics() {
-        if (map == null) return;
-        
-        GraphicsEntety graphics = getGraphics();
-        if (graphics == null) return;
-
-        double tileX = movementComponent.getX();
-        double tileY = movementComponent.getY();
-        
-        // Convert tile coordinates to percentage (0-100)
-        // mapWith and mapHight are now correct dimensions
-        double relX = (tileX * 100.0) / map.getMapWith();
-        double relY = (tileY * 100.0) / map.getMapHight();
-        
-        graphics.setPosition(relX, relY);
     }
 }

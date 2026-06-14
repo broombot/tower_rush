@@ -31,8 +31,9 @@ public final class Game {
     public void run(){
         GraphicsEngine graphicsEngine = new GraphicsEngine();
         visualLoop = new VisualLoop(graphicsEngine,enemies,projectiles,towers,movementComponents);
-        gameLogicLoop = new GameLogicLoop(enemies,towers,movementComponents,projectiles, graphicsEngine);
+        gameLogicLoop = new GameLogicLoop(enemies,towers,movementComponents,projectiles);
         visualLoop.setGameLogicLoop(gameLogicLoop);
+        
         gameLogicLoop.start();
 
         while (!close) {
@@ -44,7 +45,7 @@ public final class Game {
             visualLoop.update();
 
             try {
-                Thread.sleep(16);
+                Thread.sleep(32);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -52,5 +53,5 @@ public final class Game {
         }
 
         gameLogicLoop.shutdown();
-    };
+    }
 }

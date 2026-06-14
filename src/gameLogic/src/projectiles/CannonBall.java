@@ -3,12 +3,12 @@ package gameLogic.src.projectiles;
 import gameLogic.src.Enemy;
 import gameLogic.src.MapPoint;
 
-public abstract class CannonBall extends Projectile {
-    public CannonBall(int x, int y, MapPoint target) {
-        super(x, y, 20, target, 100, 760);
+public class CannonBall extends Projectile {
+    public CannonBall(double x, double y, MapPoint target, int damage) {
+        super(x, y, 0.8, target, damage, 2000);
     }
 
-    public CannonBall(int x, int y, Enemy targetEnemy) {
-        super(x, y, 20, targetEnemy, 100, 760);
+    public CannonBall(double x, double y, Enemy targetEnemy, int damage) {
+        super(x, y, 0.8, targetEnemy, damage, 2000);
     }
 }

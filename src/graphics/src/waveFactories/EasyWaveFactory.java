@@ -17,37 +17,29 @@ public class EasyWaveFactory implements WaveFactory {
         this.path = path;
     }
 
-    /**
-     * @param wave
-     * @return
-     */
     @Override
     public Enemy[] generateWave(int wave) {
         ArrayList<Enemy> enemies = new ArrayList<Enemy>();
+        
+        int baseCount = 5 + (wave * 3);
+        float difficultyScale = 0.8f + (wave * 0.05f); 
 
-        for (int i = 0; i < wave ; i++) {
-            if (wave < 5){
-                for (int j = 0; j < 5 ; j++) {
-                    enemies.add(new NormalEnemy(path, (float) wave /10));
-                }
-            } else if (wave < 10) {
-                for (int j = 0; j < 4; j++) {
-                    enemies.add(new NormalEnemy(path, (float) wave / 10));
-                    enemies.add(new FastEnemy(path, (float) wave / 10));
-                }
-            } else if (wave < 15) {
-                for (int j = 0; j < 4; j++) {
-                    enemies.add(new HeavyEnemy(path, (float) wave / 10));
-                    enemies.add(new NormalEnemy(path, (float) wave / 10));
-                }
+        if (wave < 5) {
+            for (int i = 0; i < baseCount; i++) {
+                enemies.add(new NormalEnemy(path, difficultyScale));
             }
-            else {
-                for (int j = 0; j < 5; j++) {
-                    enemies.add(new HeavyEnemy(path,(float) wave/10));
-                    enemies.add(new FastEnemy(path, (float) wave/10));
-                }
-            }
-
+        } else if (wave < 10) {
+            int fastCount = wave;
+            int normalCount = baseCount - fastCount;
+            for (int i = 0; i < normalCount; i++) enemies.add(new NormalEnemy(path, difficultyScale));
+            for (int i = 0; i < fastCount; i++) enemies.add(new FastEnemy(path, difficultyScale));
+        } else {
+            int heavyCount = wave - 5;
+            int fastCount = wave;
+            int normalCount = Math.max(0, baseCount - fastCount - heavyCount);
+            for (int i = 0; i < normalCount; i++) enemies.add(new NormalEnemy(path, difficultyScale));
+            for (int i = 0; i < fastCount; i++) enemies.add(new FastEnemy(path, difficultyScale));
+            for (int i = 0; i < heavyCount; i++) enemies.add(new HeavyEnemy(path, difficultyScale));
         }
 
         Collections.shuffle(enemies);

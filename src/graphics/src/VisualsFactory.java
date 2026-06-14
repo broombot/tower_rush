@@ -1,14 +1,14 @@
 package graphics.src;
 
+import gameLogic.src.Enemy;
+import gameLogic.src.towers.Tower;
+import gameLogic.src.projectiles.Projectile;
 
 public interface VisualsFactory {
-
-    GraphicsEntety addEnemy(int x, int y);
-    GraphicsEntety addTower(int x, int y);
-    GraphicsEntety addEntety(int x, int y);
-    GraphicsEntety addProjectile(int x, int y);
+    EntityVisual createEnemyVisual(Enemy enemy);
+    EntityVisual createTowerVisual(Tower tower);
+    EntityVisual createProjectileVisual(Projectile projectile);
+    
     GamePanel creatGamePanel();
     MenuPanel creatMenuPanel();
-
-
 }

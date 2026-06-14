@@ -5,11 +5,11 @@ import java.util.List;
 import gameLogic.src.Enemy;
 import gameLogic.src.MovementComponent;
 import gameLogic.src.projectiles.Projectile;
-import graphics.src.GraphicsEngine;
+
 
 public class TowerUpdater {
 
-    public void updateTowers(List<Tower> towers, List<Enemy> enemies, List<Projectile> projectiles, List<MovementComponent> movementComponents, GraphicsEngine graphicsEngine) {
+    public void updateTowers(List<Tower> towers, List<Enemy> enemies, List<Projectile> projectiles, List<MovementComponent> movementComponents) {
         if (towers == null || enemies == null || projectiles == null || movementComponents == null) {
             return;
         }
@@ -28,9 +28,6 @@ public class TowerUpdater {
             if (projectile != null) {
                 projectiles.add(projectile);
                 movementComponents.add(projectile.getMovementComponent());
-                if (graphicsEngine != null) {
-                    graphicsEngine.addEntety(projectile.getGraphics());
-                }
                 tower.resetTimer();
             }
         }

@@ -22,6 +22,10 @@ public class GraphicsEngine implements Runnable {
         this.visualsFactory = visualsFactory;
     }
 
+    public VisualsFactory getVisualsFactory() {
+        return visualsFactory;
+    }
+
     public GraphicsEngine() {
 
         inMenu = false;
@@ -80,27 +84,28 @@ public class GraphicsEngine implements Runnable {
         });
     }
 
-    /**
-     * Load a map into the game panel and the tower placer.
-     */
+    public void updateHUD(int lives, int money) {
+        gamePanel.setStats(lives, money);
+    }
+
     public void addMap(Map map){
         gamePanel.setMap(map);
         towerPlacer.setMap(map);
     }
 
-    public void addEntety(GraphicsEntety entety){
-        gamePanel.addEntety(entety);
+    public void addVisual(EntityVisual visual){
+        gamePanel.addVisual(visual);
+    }
+
+    public void removeVisual(EntityVisual visual) {
+        gamePanel.removeVisual(visual);
     }
 
     public void clearGameEntities() {
         gamePanel.clearEnteties();
+        towerPlacer.setMap(null);
     }
 
-
-    /**
-     * Activate or deactivate tower-placement mode.
-     * While active, clicking a PLACEABLE tile calls every registered listener.
-     */
     public void setTowerPlacerActive(boolean active) {
         towerPlacer.setActive(active);
     }
@@ -144,11 +149,6 @@ public class GraphicsEngine implements Runnable {
         return towerPlacer.isActive();
     }
 
-    /**
-     * Register a callback that is fired whenever the player successfully
-     * places a tower.  The Game class should use this to spawn the actual
-     * tower entity.
-     */
     public void addTowerPlacedListener(TowerPlacer.TowerPlacedListener listener) {
         towerPlacer.addListener(listener);
     }
@@ -186,9 +186,5 @@ public class GraphicsEngine implements Runnable {
                 System.out.println(e.getMessage() + "\u001B[0m \u001B[0m");
             }
         }
-    }
-
-    public void removeEntety(GraphicsEntety entety){
-        gamePanel.removeEntety(entety);
     }
 }
